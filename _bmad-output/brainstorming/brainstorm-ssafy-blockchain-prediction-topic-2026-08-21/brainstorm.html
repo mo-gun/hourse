@@ -1,0 +1,1056 @@
+<title>SSAFY 예측 프로젝트 주제 선정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap">
+
+<style>
+  :root {
+    color-scheme: light;
+    --plane:      #F1F3F0;
+    --surface:    #FBFBF9;
+    --surface-2:  #E9EDE9;
+    --ink:        #141A18;
+    --ink-2:      #4E5A56;
+    --muted:      #8A948F;
+    --rule:       #DCE1DC;
+    --rule-soft:  #E7EBE7;
+
+    --s1: #7DBFA5;  --s2: #52A588;  --s3: #2E8A6B;  --s4: #1B6B52;  --s5: #0B4A39;
+    --on-s1: #141A18; --on-s2: #141A18; --on-s3: #141A18; --on-s4: #FBFBF9; --on-s5: #FBFBF9;
+
+    --accent:      #1B6B52;
+    --accent-soft: #E2EFE9;
+
+    --good:     #0ca30c;
+    --warning:  #fab219;
+    --critical: #d03b3b;
+    --alarm-bg: #FBEEEC;
+
+    --shadow: 0 1px 2px rgba(20,26,24,.05), 0 8px 24px -16px rgba(20,26,24,.28);
+
+    --sans: "IBM Plex Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --plane:      #0C100F;
+      --surface:    #161B19;
+      --surface-2:  #1E2523;
+      --ink:        #F0F4F2;
+      --ink-2:      #B4BFBA;
+      --muted:      #7E8A85;
+      --rule:       #2A3330;
+      --rule-soft:  #212927;
+
+      --s1: #1B5745;  --s2: #2A7C60;  --s3: #3E9E7C;  --s4: #59B392;  --s5: #7FCCAE;
+      --on-s1: #F0F4F2; --on-s2: #F0F4F2; --on-s3: #0C100F; --on-s4: #0C100F; --on-s5: #0C100F;
+
+      --accent:      #59B392;
+      --accent-soft: #17302A;
+      --alarm-bg:    #2A1A19;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --plane:      #0C100F;
+    --surface:    #161B19;
+    --surface-2:  #1E2523;
+    --ink:        #F0F4F2;
+    --ink-2:      #B4BFBA;
+    --muted:      #7E8A85;
+    --rule:       #2A3330;
+    --rule-soft:  #212927;
+
+    --s1: #1B5745;  --s2: #2A7C60;  --s3: #3E9E7C;  --s4: #59B392;  --s5: #7FCCAE;
+    --on-s1: #F0F4F2; --on-s2: #F0F4F2; --on-s3: #0C100F; --on-s4: #0C100F; --on-s5: #0C100F;
+
+    --accent:      #59B392;
+    --accent-soft: #17302A;
+    --alarm-bg:    #2A1A19;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.72;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px 120px; }
+  .measure { max-width: 68ch; }
+
+  /* ── masthead ─────────────────────────────────────────── */
+
+  .masthead {
+    border-bottom: 1px solid var(--rule);
+    padding: 56px 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .stamp {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    align-items: center;
+  }
+
+  .stamp b { color: var(--accent); font-weight: 600; }
+
+  h1 {
+    font-size: clamp(2rem, 5.2vw, 3.2rem);
+    line-height: 1.14;
+    font-weight: 700;
+    letter-spacing: -.022em;
+    margin: 0;
+    text-wrap: balance;
+    max-width: 21ch;
+  }
+
+  .deck {
+    font-size: clamp(1.02rem, 2.1vw, 1.2rem);
+    line-height: 1.62;
+    color: var(--ink-2);
+    font-weight: 300;
+    max-width: 58ch;
+    margin: 0;
+  }
+
+  .deck strong { color: var(--ink); font-weight: 600; }
+
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .fig { background: var(--surface); padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 2px; }
+
+  .fig-n {
+    font-family: var(--mono);
+    font-size: 1.9rem;
+    font-weight: 500;
+    letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+
+  .fig-n small { font-size: .95rem; color: var(--muted); font-weight: 400; }
+  .fig-l { font-size: .78rem; color: var(--ink-2); line-height: 1.45; }
+
+  /* ── sections ─────────────────────────────────────────── */
+
+  section { padding-top: 72px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 12px;
+    display: block;
+  }
+
+  h2 {
+    font-size: clamp(1.42rem, 3vw, 1.86rem);
+    line-height: 1.28;
+    font-weight: 600;
+    letter-spacing: -.018em;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+
+  h3 { font-size: 1.06rem; font-weight: 600; letter-spacing: -.01em; margin: 0 0 8px; line-height: 1.45; }
+
+  p { margin: 0 0 18px; }
+  p:last-child { margin-bottom: 0; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  em { font-style: normal; background: var(--accent-soft); padding: 1px 5px; border-radius: 2px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: .855em;
+    background: var(--surface-2);
+    padding: 1.5px 5px;
+    border-radius: 3px;
+    color: var(--ink);
+  }
+
+  /* ── verdict ──────────────────────────────────────────── */
+
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 30px 32px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .verdict-title {
+    font-size: clamp(1.22rem, 2.6vw, 1.55rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.34;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .verdict p { max-width: 64ch; color: var(--ink-2); }
+  .verdict p strong { color: var(--ink); font-weight: 600; }
+
+  /* ── correction callout ───────────────────────────────── */
+
+  .alarm {
+    background: var(--alarm-bg);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--critical);
+    border-radius: 3px;
+    padding: 26px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .alarm-k {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--critical);
+  }
+
+  .alarm h3 { margin: 0; font-size: 1.14rem; letter-spacing: -.015em; }
+  .alarm p { margin: 0; color: var(--ink-2); max-width: 66ch; font-size: .95rem; }
+  .alarm p strong { color: var(--ink); font-weight: 600; }
+
+  .quote-note {
+    font-family: var(--mono);
+    font-size: .82rem;
+    line-height: 1.7;
+    color: var(--ink-2);
+    border-left: 2px solid var(--rule);
+    padding: 4px 0 4px 16px;
+    margin: 0;
+  }
+
+  /* ── split panes ──────────────────────────────────────── */
+
+  .split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .pane { background: var(--surface); padding: 24px 26px 26px; }
+
+  .pane h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .pane ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; }
+
+  .pane li {
+    font-size: .93rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+    padding-left: 19px;
+    position: relative;
+  }
+
+  .pane li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .62em;
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+
+  .pane.locked li::before { background: var(--muted); border-radius: 50%; }
+  .pane li b { color: var(--ink); font-weight: 600; }
+
+  /* ── tables ───────────────────────────────────────────── */
+
+  .scroller { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+
+  table { border-collapse: collapse; width: 100%; min-width: 640px; }
+
+  th, td {
+    text-align: left;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+    font-size: .88rem;
+    line-height: 1.55;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  td.src { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  td.note { color: var(--ink-2); }
+  td .mono { font-family: var(--mono); font-size: .95em; font-variant-numeric: tabular-nums; }
+  td.nums { font-family: var(--mono); color: var(--ink-2); font-size: .84rem; line-height: 1.7; }
+  td.nums b { color: var(--ink); font-weight: 600; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 3px 9px 3px 7px;
+    border-radius: 2px;
+    border: 1px solid var(--rule);
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.good { background: var(--good); }
+  .dot.warn { background: var(--warning); }
+  .dot.crit { background: var(--critical); }
+
+  /* ── receipt ──────────────────────────────────────────── */
+
+  .receipt {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.85;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+
+  .receipt-head {
+    padding: 11px 18px;
+    border-bottom: 1px dashed var(--rule);
+    color: var(--muted);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .receipt-body { padding: 16px 18px 18px; white-space: pre; color: var(--ink-2); }
+  .receipt-body .k { color: var(--muted); }
+  .receipt-body .v { color: var(--ink); }
+  .receipt-body .ok { color: var(--accent); font-weight: 600; }
+  .receipt-body .no { color: var(--critical); font-weight: 600; }
+
+  /* ── score matrix ─────────────────────────────────────── */
+
+  .matrix { min-width: 760px; }
+
+  .matrix th.crit-h {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: .04em;
+    padding: 10px 4px;
+    line-height: 1.4;
+    white-space: normal;
+    width: 74px;
+  }
+
+  .matrix th.crit-h span { display: block; color: var(--accent); font-size: 9.5px; letter-spacing: .06em; }
+  .matrix td.cell { padding: 5px 4px; text-align: center; }
+
+  .swatch {
+    display: block;
+    margin: 0 1px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 30px;
+    height: 30px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .v1 { background: var(--s1); color: var(--on-s1); }
+  .v2 { background: var(--s2); color: var(--on-s2); }
+  .v3 { background: var(--s3); color: var(--on-s3); }
+  .v4 { background: var(--s4); color: var(--on-s4); }
+  .v5 { background: var(--s5); color: var(--on-s5); }
+
+  .matrix td.name { white-space: nowrap; padding-right: 22px; }
+  .matrix td.name .tag { font-family: var(--mono); color: var(--muted); font-size: .8rem; margin-right: 8px; }
+  .matrix td.name .lab { font-weight: 600; color: var(--ink); font-size: .92rem; }
+  .matrix tr.winner td { background: var(--accent-soft); }
+
+  .total { width: 180px; }
+  .total-wrap { display: flex; align-items: center; gap: 10px; }
+
+  .bar { flex: 1; height: 9px; background: var(--surface-2); border-radius: 2px; overflow: hidden; min-width: 56px; }
+  .bar > i { display: block; height: 100%; background: var(--s4); border-radius: 0 3px 3px 0; }
+  tr.winner .bar > i { background: var(--s5); }
+
+  .total-n {
+    font-family: var(--mono);
+    font-size: .88rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    width: 44px;
+    text-align: right;
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .ramp { display: flex; gap: 2px; }
+  .ramp i { width: 22px; height: 10px; border-radius: 2px; display: block; }
+
+  .caption { font-size: .82rem; color: var(--muted); line-height: 1.6; margin-top: 12px; max-width: 74ch; }
+  .caption b { color: var(--ink-2); font-weight: 600; }
+
+  /* ── triage ───────────────────────────────────────────── */
+
+  .triage { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+
+  .tri {
+    background: var(--surface);
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 0 22px;
+    padding: 18px 24px;
+    align-items: start;
+  }
+
+  .tri-k { display: flex; flex-direction: column; gap: 5px; }
+  .tri-k b { font-size: .93rem; font-weight: 600; color: var(--ink); line-height: 1.45; }
+  .tri-k span { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .tri-v { font-size: .9rem; color: var(--ink-2); line-height: 1.7; }
+  .tri-v b { color: var(--ink); font-weight: 600; }
+  .tri.keep { background: var(--accent-soft); }
+
+  @media (max-width: 640px) {
+    .tri { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+  /* ── cards ────────────────────────────────────────────── */
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(288px, 1fr)); gap: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 22px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .card-h .tag { font-family: var(--mono); font-size: .78rem; color: var(--muted); }
+  .card-h h3 { margin: 0; }
+  .card p { font-size: .91rem; color: var(--ink-2); line-height: 1.66; margin: 0; }
+  .card p strong { color: var(--ink); font-weight: 600; }
+
+  .verdict-line {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .verdict-line.warn { color: var(--warning); }
+  .verdict-line.crit { color: var(--critical); }
+  .verdict-line.ok { color: var(--accent); }
+
+  /* ── roadmap ──────────────────────────────────────────── */
+
+  .road { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+
+  .leg {
+    background: var(--surface);
+    display: grid;
+    grid-template-columns: 78px 1fr 118px;
+    gap: 0 20px;
+    padding: 19px 24px;
+    align-items: center;
+  }
+
+  .leg-w { font-family: var(--mono); font-size: .84rem; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .leg-t { font-size: .93rem; color: var(--ink-2); line-height: 1.6; }
+  .leg-t b { color: var(--ink); font-weight: 600; }
+  .leg-u { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; text-align: right; color: var(--muted); font-weight: 600; }
+  .leg-u.on { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .leg { grid-template-columns: 64px 1fr; }
+    .leg-u { grid-column: 2; text-align: left; padding-top: 6px; }
+  }
+
+  /* ── steps ────────────────────────────────────────────── */
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 14px; }
+
+  ol.steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 0 16px;
+    align-items: start;
+    font-size: .95rem;
+    line-height: 1.66;
+    color: var(--ink-2);
+  }
+
+  ol.steps li::before {
+    content: counter(s, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--accent);
+    padding-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ol.steps li b { color: var(--ink); font-weight: 600; }
+
+  /* ── sources ──────────────────────────────────────────── */
+
+  .sources { border-top: 1px solid var(--rule); margin-top: 76px; padding-top: 26px; }
+  .sources h3 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .sources ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .sources li { font-size: .85rem; line-height: 1.6; color: var(--ink-2); }
+
+  .colophon {
+    margin-top: 32px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="stamp">
+      <span>주제 선정 브리프 · 2차</span>
+      <span>2026·08·21</span>
+      <span>6인 팀</span>
+      <span>수상 80 / 취업 20</span>
+      <span><b>회의 후보 21건 반영</b></span>
+    </div>
+
+    <h1>애널리스트는 자기 예측을 지우고, 블록체인은 못 지우게 한다</h1>
+
+    <p class="deck">
+      팀이 조건을 세 개 추가했다 — <strong>RAG를 쓰고 싶다</strong>, <strong>빠르게 론칭해 유저 테스트를 돌린다</strong>,
+      <strong>목표는 수상이 8할</strong>. 이 셋을 적용하자 21개 후보 중 <strong>17개가 떨어졌고</strong>
+      남은 넷 중 하나가 확실히 앞선다.
+    </p>
+
+    <div class="figures">
+      <div class="fig">
+        <span class="fig-n">21 <small>→ 4</small></span>
+        <span class="fig-l">회의 후보 중 기준을 통과한 수</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n">4<small> / 10</small></span>
+        <span class="fig-l">정규식만으로 목표주가 추출에 성공한 리포트</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n">93.1<small>%</small></span>
+        <span class="fig-l">국내 애널리스트 리포트의 매수·적극매수 비중</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n">19<small>%</small></span>
+        <span class="fig-l">그 목표주가가 실제로 달성된 비율</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <span class="eyebrow">결론</span>
+    <div class="verdict">
+      <p class="verdict-title">
+        #18 애널리스트 리포트 검증 플랫폼 &mdash; 예측을 온체인에 박제하고 데이터로 채점한다
+      </p>
+      <p>
+        자본시장연구원이 25년치 리포트 <strong>74만 건</strong>을 분석한 결과, 매수 의견이 <strong>93.1%</strong>인데
+        목표주가 달성률은 <strong>19%</strong>였다. 그리고 결정적으로 —
+        <em>틀린 목표주가는 나중에 조용히 하향 조정된다.</em> 아무도 사후 검증을 하지 않는다.
+      </p>
+      <p>
+        <strong>&ldquo;이 애널리스트, 실제로 얼마나 맞혔나?&rdquo;</strong> 이 질문에 답하는 서비스가 국내에 없다.
+        그리고 이 문제는 <strong>불변 원장이 아니면 풀리지 않는다</strong> —
+        &ldquo;왜 블록체인이냐&rdquo;에 이만큼 깔끔하게 답하는 후보가 나머지 20개 중에 없었다.
+      </p>
+      <p>
+        덤으로 <strong>RAG가 장식이 아니라 데이터 파이프라인 그 자체</strong>가 된다. 아래에 실측 근거가 있다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">먼저 정정</span>
+    <h2>Riot API는 LCK 경기 데이터를 주지 않는다</h2>
+
+    <div class="alarm">
+      <span class="alarm-k">팀 노트 사실관계 오류</span>
+      <p class="quote-note">
+        &ldquo;Riot API가 공식 무료 제공 &mdash; 매치 데이터, 챔피언 픽밴, 선수별 지표까지<br>
+        정형화된 JSON으로 나옴. 크롤링 필요 없음&rdquo;
+      </p>
+      <h3>솔로랭크에 대해서는 맞고, 프로 경기에 대해서는 틀리다</h3>
+      <p>
+        LCS·LEC·LCK는 <strong>솔로랭크와 완전히 다른 서버 클러스터</strong>에서 운영돼 Riot 공식 API로 조회되지 않는다.
+        LCK 결과는 비공식 <code>esports-api.lolesports.com</code>에서만 나오고, 이 API는
+        <strong>2020년 이후 유지보수가 중단</strong>됐으며 Riot은 하위 호환을 보장하지 않는다고 명시했다.
+        게다가 Riot <strong>개발자 키는 24시간마다 만료</strong>되고, Production 키 승인은 최대 한 달이 걸린다.
+      </p>
+      <h3>일정도 정확히 어긋난다</h3>
+      <p>
+        LCK 플레이오프 결승 <strong>9월 13일</strong>, 롤드컵은 <strong>10월 15일 ~ 11월 14일</strong>.
+        7주 프로젝트라면 <strong>후반부가 통째로 프로 경기 공백</strong>과 겹친다 &mdash;
+        하필 유저 테스트를 돌려야 할 시점에 예측할 경기가 없다.
+      </p>
+      <p>
+        살리려면 <strong>프로 경기 대신 솔로랭크</strong>로 틀어야 한다. 공식 API로 항상 데이터가 나오고,
+        &ldquo;이번 주 우리 반에서 티어 올릴 사람&rdquo; 같은 형태면 싸피 몰입도까지 얻는다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">트리아지 · 21건</span>
+    <h2>17개가 떨어진 이유는 네 가지뿐이다</h2>
+    <p class="measure" style="color:var(--ink-2)">
+      명세서가 만들라는 것은 <b>예측 이벤트 플랫폼</b>이다 &mdash; 선택지, 참여, 결과 확정, 비례 정산.
+      이 골격에 얹히지 않으면 아무리 좋은 아이디어여도 명세를 이탈한다.
+    </p>
+
+    <div class="triage">
+      <div class="tri">
+        <div class="tri-k">
+          <b>예측 플랫폼이 아니다</b>
+          <span>명세 골격 이탈</span>
+        </div>
+        <div class="tri-v">
+          <b>4</b> 모임통장 습관 · <b>8</b> P2P 전력거래 · <b>13</b> 헬스장 후불정산 ·
+          <b>14</b> 암표 · <b>15</b> 중고거래 · <b>16</b> 러닝화 패스포트 · <b>21</b> 알바 매칭<br>
+          전부 <b>에스크로 또는 이력관리</b> 서비스다. &ldquo;결과를 예측&rdquo;하는 게 아니라 &ldquo;약속을 담보&rdquo;한다.
+          21번이 정리한 블록체인 당위성 3조건은 훌륭하지만, 그 조건을 만족한다고 예측 플랫폼이 되지는 않는다.
+        </div>
+      </div>
+
+      <div class="tri">
+        <div class="tri-k">
+          <b>결과를 확정할 수 없다</b>
+          <span>오라클 성립 불가</span>
+        </div>
+        <div class="tri-v">
+          <b>7</b> 공약 이행 예측 · <b>10</b> AI 답변 진실성 · <b>11</b> 딥페이크 탐정<br>
+          &ldquo;공약을 얼마나 지켰나&rdquo;, &ldquo;이 답이 진실인가&rdquo;는 <b>판정이 주관적</b>이다.
+          정답 선택지를 확정할 수 없으면 비례 정산의 근거 자체가 무너진다. 11번은 팀도 블록체인 당위성을 의심했다.
+        </div>
+      </div>
+
+      <div class="tri">
+        <div class="tri-k">
+          <b>사행성 정면 충돌</b>
+          <span>법적 리스크</span>
+        </div>
+        <div class="tri-v">
+          <b>1</b> 경마 · <b>19</b> 도박장<br>
+          경마는 한국마사회 독점 영역이다. 사흘 전 <b>폴리마켓이 국내 접속 차단</b>된 시점에
+          심사장에 들고 갈 소재가 아니다.
+        </div>
+      </div>
+
+      <div class="tri">
+        <div class="tri-k">
+          <b>데이터가 안 나온다</b>
+          <span>최우선 기준 탈락</span>
+        </div>
+        <div class="tri-v">
+          <b>2</b> 자체 게임 베팅 · <b>5</b> 야구 승부예측 · <b>20</b> 음원차트<br>
+          자체 게임은 결과가 <b>내부 데이터</b>라 오라클을 쓸 이유가 사라진다.
+          KBO와 멜론은 공식 오픈 API가 없다 &mdash; KBO 크롤링 데이터는 권리가 KBO에 있고 상업적 이용도 제한된다.
+        </div>
+      </div>
+
+      <div class="tri keep">
+        <div class="tri-k">
+          <b>생존</b>
+          <span>점수화 대상</span>
+        </div>
+        <div class="tri-v">
+          <b>18</b> 애널리스트 리포트 검증 · <b>12</b> 유튜브 조회수 예측 ·
+          <b>5-1</b> e스포츠 예측 · <b>17</b> 부동산 시세 예측
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">실측 · RAG 당위성</span>
+    <h2>정규식으로는 10건 중 4건밖에 못 뽑는다</h2>
+    <p class="measure" style="color:var(--ink-2)">
+      네이버 금융 리서치에서 오늘자 리포트 10건을 실제로 내려받아 파싱했다. 이 결과가 #18을 1위로 밀어올렸다.
+    </p>
+
+    <div class="receipt">
+      <div class="receipt-head">
+        <span>analyst report extraction · 실측</span>
+        <span>2026-08-21 · n=10</span>
+      </div>
+      <div class="receipt-body"> 1. 글자 2850  목표주가:        <span class="no">-</span>   ISSUE COMMENT [LG NDR 후기]…      <span class="k">← 코멘트, 목표주가 없음</span>
+ 2. 글자 4713  목표주가:  <span class="ok">110,000</span>   (388210,KQ) 씨엠티엑스
+ 3. 글자 4749  목표주가:   <span class="ok">51,000</span>   (365340,KQ) 성일하이텍
+ 4. 글자 4625  목표주가:        <span class="no">-</span>   기업분석_Update KCC (0023…    <span class="k">← 의견 BUY인데 미검출</span>
+ 5. 글자 6029  목표주가:        <span class="no">-</span>   기업분석 한국단자 (025540)     <span class="k">← 의견 매수인데 미검출</span>
+ 6. 글자 3258  목표주가:   <span class="ok">70,000</span>   기업분석(Report) 케이엠…
+ 7. 글자 5754  목표주가:        <span class="no">-</span>   NOT RATED                      <span class="k">← 애초에 제외 대상</span>
+ 8. 글자 5492  목표주가:        <span class="no">-</span>   NOT RATED
+ 9. 글자 3159  목표주가:  <span class="ok">830,000</span>   BUY
+10. 글자 3107  목표주가:        <span class="no">-</span>   NOT RATED
+
+<span class="k">─────────────────────────────────────────────────────────</span>
+목록 수집       <span class="ok">200</span>  페이지당 리포트 <span class="v">30건</span>, nid 순차 증가 → 과거분 대량 수집 가능
+PDF 다운로드    <span class="ok">10 / 10</span>  텍스트 PDF (스캔 이미지 아님)
+정규식 추출     <span class="no">4 / 10</span>  증권사별 레이아웃 상이 + 리포트 유형 혼재
+주가 조회       <span class="ok">200</span>  네이버 금융 API로 종가 반환 → 달성 여부 100% 자동 판정</div>
+    </div>
+
+    <p class="caption">
+      <b>이 6/10 실패가 RAG를 써야 하는 정확한 이유다.</b>
+      대부분의 프로젝트에서 RAG는 &ldquo;챗봇 하나 붙였습니다&rdquo;로 끝난다.
+      여기서는 리포트 유형 분류 &rarr; 목표주가·투자의견 추출 &rarr; 근거 문단 인용까지가 전부 RAG 파이프라인이고,
+      그게 없으면 제품이 성립하지 않는다. 심사에서 &ldquo;왜 RAG인가&rdquo;에 답이 나온다.
+    </p>
+  </section>
+
+  <section>
+    <span class="eyebrow">수렴 · 재점수화</span>
+    <h2>조건이 바뀌자 순위가 바뀌었다</h2>
+    <p class="measure" style="color:var(--ink-2)">
+      1차 브리프는 데이터 가용성만 봤다. 이번에는 팀이 추가한 조건 &mdash; RAG, 빠른 론칭, 수상 8할 &mdash;
+      을 가중치로 넣었다. 각 항목 1&ndash;5점, 괄호가 가중치, 만점 70점.
+    </p>
+
+    <div class="scroller">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>후보</th>
+            <th class="crit-h">RAG<br>당위성<span>×3</span></th>
+            <th class="crit-h">데이터<br>자동확정<span>×3</span></th>
+            <th class="crit-h">확정<br>사이클<span>×2</span></th>
+            <th class="crit-h">블록체인<br>당위성<span>×2</span></th>
+            <th class="crit-h">차별성<br>문제의식<span>×2</span></th>
+            <th class="crit-h">유저<br>테스트<span>×2</span></th>
+            <th class="total">가중 총점</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="winner">
+            <td class="name"><span class="tag">18</span><span class="lab">애널리스트 리포트 검증</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v3">3</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v3">3</span></td>
+            <td><div class="total-wrap"><span class="bar"><i style="width:88.6%"></i></span><span class="total-n">62</span></div></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="tag">12</span><span class="lab">유튜브 조회수 예측</span></td>
+            <td class="cell"><span class="swatch v2">2</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v3">3</span></td>
+            <td class="cell"><span class="swatch v2">2</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td><div class="total-wrap"><span class="bar"><i style="width:72.9%"></i></span><span class="total-n">51</span></div></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="tag">5-1</span><span class="lab">e스포츠 · 솔로랭크 전환 시</span></td>
+            <td class="cell"><span class="swatch v2">2</span></td>
+            <td class="cell"><span class="swatch v4">4</span></td>
+            <td class="cell"><span class="swatch v4">4</span></td>
+            <td class="cell"><span class="swatch v3">3</span></td>
+            <td class="cell"><span class="swatch v2">2</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td><div class="total-wrap"><span class="bar"><i style="width:65.7%"></i></span><span class="total-n">46</span></div></td>
+          </tr>
+          <tr>
+            <td class="name"><span class="tag">17</span><span class="lab">부동산 시세 예측</span></td>
+            <td class="cell"><span class="swatch v4">4</span></td>
+            <td class="cell"><span class="swatch v5">5</span></td>
+            <td class="cell"><span class="swatch v1">1</span></td>
+            <td class="cell"><span class="swatch v3">3</span></td>
+            <td class="cell"><span class="swatch v3">3</span></td>
+            <td class="cell"><span class="swatch v2">2</span></td>
+            <td><div class="total-wrap"><span class="bar"><i style="width:64.3%"></i></span><span class="total-n">45</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="legend">
+      <span>점수</span>
+      <span class="ramp">
+        <i style="background:var(--s1)"></i>
+        <i style="background:var(--s2)"></i>
+        <i style="background:var(--s3)"></i>
+        <i style="background:var(--s4)"></i>
+        <i style="background:var(--s5)"></i>
+      </span>
+      <span>1 → 5</span>
+    </div>
+    <p class="caption">
+      5-1은 <b>프로 경기가 아니라 솔로랭크로 전환했을 때</b>의 점수다.
+      프로 경기 기준이면 데이터 1점 · 사이클 1점으로 떨어져 총점 31점, 최하위가 된다.
+    </p>
+  </section>
+
+  <section>
+    <span class="eyebrow">왜 블록체인인가</span>
+    <h2>팀이 세운 3조건에 네 번째가 붙는다</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>조건</th><th>#18에서의 충족 방식</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="src">운영자를 믿지 않아도<br>보상금을 맡길 수 있다</td>
+            <td class="note"><code>PredictionEvent</code> 컨트랙트가 참여 풀을 직접 보관한다. 운영자 지갑을 거치지 않는다.</td>
+          </tr>
+          <tr>
+            <td class="src">검증자가 거짓말하면<br>예치금을 잃는다</td>
+            <td class="note">오라클 리포터 스테이킹 + 이의제기 기간. 잘못된 확정값을 제출하면 예치금이 슬래싱된다.</td>
+          </tr>
+          <tr>
+            <td class="src">확정된 결과에 따라<br>누구도 막을 수 없이 자동 정산</td>
+            <td class="note">명세서가 요구하는 비례 정산 함수가 그대로 이 조건이다.</td>
+          </tr>
+          <tr style="background:var(--accent-soft)">
+            <td class="src">＋ 틀린 전망이<br>조용히 사라지지 않는다</td>
+            <td class="note">
+              <strong>리포트 스냅샷 해시를 발간 시점에 온체인 기록.</strong>
+              목표주가를 나중에 하향 조정해도 원본이 남는다.
+              <strong>이 문제는 불변 원장이 아니면 풀리지 않는다</strong> &mdash; 나머지 20개 후보 중 어느 것도
+              이만큼 명확한 당위성을 갖지 못했다.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">약점과 해법</span>
+    <h2>목표주가 판정은 6~12개월 뒤에 난다</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-h"><h3>문제</h3></div>
+        <span class="verdict-line crit">7주 안에 사이클이 한 번도 안 돈다</span>
+        <p>
+          애널리스트가 제시하는 목표주가의 투자기간은 통상 <strong>6개월에서 1년</strong>이다.
+          예측 → 결과 확정 → 정산 사이클이 프로젝트 기간 안에 한 바퀴도 돌지 않으면,
+          <strong>가장 중요한 데모를 못 보여준다.</strong>
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>해법 · 두 갈래</h3></div>
+        <span class="verdict-line ok">백테스트 + 단기 이벤트</span>
+        <p>
+          <strong>① 과거 리포트 백테스트</strong> &mdash; 2024~2025년 리포트를 수집하면 이미 결과가 난 건들로
+          <strong>애널리스트 적중률 랭킹</strong>을 즉시 만들 수 있다. 예측 기능 없이 이것만으로 서비스가 성립하고, 유저가 온다.
+        </p>
+        <p>
+          <strong>② 예측 이벤트는 단기로</strong> &mdash; &ldquo;발간 후 5거래일 수익률 구간&rdquo;,
+          &ldquo;30일 내 목표주가 도달 여부&rdquo;, &ldquo;다음 실적이 컨센서스를 상회할까&rdquo;.
+          이러면 프로젝트 기간에 사이클이 여러 번 돈다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">7주 · 기능단위 + Git flow</span>
+    <h2>1주차 끝에 이미 배포된 것이 있다</h2>
+    <div class="road">
+      <div class="leg">
+        <span class="leg-w">W1–2</span>
+        <span class="leg-t"><b>크롤러 + RAG 추출 파이프라인</b> → 적중률 랭킹 페이지만 먼저 론칭. 예측 기능 없이도 서비스가 성립한다</span>
+        <span class="leg-u on">유저 테스트 1차</span>
+      </div>
+      <div class="leg">
+        <span class="leg-w">W3–4</span>
+        <span class="leg-t"><b>예측 이벤트 + 컨트랙트 정산 + 지갑 연결</b> — 명세의 Factory·PredictionEvent 골격을 얹는다</span>
+        <span class="leg-u">—</span>
+      </div>
+      <div class="leg">
+        <span class="leg-w">W5</span>
+        <span class="leg-t"><b>온체인 리포트 해시 기록 + 이의제기 기간</b> — 블록체인 당위성이 화면에 드러나는 지점</span>
+        <span class="leg-u on">유저 테스트 2차</span>
+      </div>
+      <div class="leg">
+        <span class="leg-w">W6–7</span>
+        <span class="leg-t"><b>피드백 반영 + 완성도 + 발표 준비</b></span>
+        <span class="leg-u">—</span>
+      </div>
+    </div>
+    <p class="caption">
+      기능단위로 잘리는 구조라 Git flow와 6인 병렬 작업에 그대로 맞는다.
+      &ldquo;빠른 론칭 → 유저 테스트 → 피드백&rdquo;이라는 도전 과제가 로드맵에 내장돼 있다.
+    </p>
+  </section>
+
+  <section>
+    <span class="eyebrow">차선책</span>
+    <h2>#18이 무겁다고 판단되면</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-h"><span class="tag">12</span><h3>유튜브 조회수 예측</h3></div>
+        <span class="verdict-line ok">가장 안전한 선택 · 51점</span>
+        <p>
+          공식 API로 데이터가 확실하고 <strong>1주일 사이클이 완벽</strong>하며 유저 테스트도 제일 쉽다.
+          대신 <strong>RAG 당위성이 약하고</strong> 문제의식이 얕아 수상 8할 목표에는 불리하다.
+          <em>완성도로 승부할 때의 선택.</em>
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="tag">5-1</span><h3>e스포츠 → 솔로랭크</h3></div>
+        <span class="verdict-line warn">전제를 고쳐야 성립 · 46점</span>
+        <p>
+          유저 확보력은 최고다. 단 <strong>프로 경기 데이터 전제를 솔로랭크로 바꿔야</strong> 성립한다.
+          팀도 이미 &ldquo;소재가 흔하다&rdquo;고 짚었고, 실제로 그렇다.
+          차별점을 실시간 마이크로 예측과 오라클 검증에서 만들어야 한다.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="tag">17</span><h3>부동산 시세 예측</h3></div>
+        <span class="verdict-line warn">사이클이 너무 길다 · 45점</span>
+        <p>
+          국토부 실거래가 공식 API로 데이터는 좋고 RAG도 붙는다. 그러나
+          <strong>실거래 공개가 계약 후 30일</strong>이라 확정 사이클이 프로젝트 기간을 넘는다.
+          #18과 같은 병을 앓는데 해법은 더 적다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">시작 전에</span>
+    <h2>정해두고 넘어가야 할 것</h2>
+    <ol class="steps">
+      <li><b>리포트 PDF 원문은 증권사 저작물이다.</b> 원문을 재배포하지 말고 메타데이터 &mdash; 목표주가, 투자의견, 발간일, 애널리스트, 증권사 &mdash; 만 추출·저장하고 원문은 출처 링크로 연결한다. 이것만 지키면 리스크가 크게 낮아진다.</li>
+      <li><b>수집 범위를 먼저 확정한다.</b> 과거 몇 년치, 어느 종목군, 어느 증권사까지. 백테스트 랭킹의 신뢰도가 여기서 갈린다.</li>
+      <li><b>추출 스키마를 문서로 고정한다.</b> &ldquo;어떤 필드를, 어떤 근거 문단과 함께, 어떤 신뢰도로 뽑는가&rdquo;. 이 문서가 곧 RAG 파이프라인의 명세이자 오라클 확정 기준이 된다.</li>
+      <li><b>단기 이벤트의 확정 규칙을 정한다.</b> 5거래일 수익률 구간인지, 30일 내 목표주가 도달 여부인지. 기준가·시점·구간 폭까지 못 박아야 컨트랙트 설계가 시작된다.</li>
+      <li><b>RAG 추출 정확도의 목표치를 세운다.</b> 정규식 베이스라인이 40%다. 이 숫자를 얼마까지 올렸는지가 발표의 핵심 지표가 된다.</li>
+    </ol>
+  </section>
+
+  <div class="sources">
+    <h3>근거와 출처</h3>
+    <ul>
+      <li><a href="https://www.kcmi.re.kr/report/report_view?report_no=2266">자본시장연구원 — 애널리스트의 낙관성, 정확성, 정보성 (74만 건 분석)</a></li>
+      <li><a href="https://www.seoul.co.kr/news/economy/2026/05/04/20260504500081">서울신문 — 증권가 리포트 10건 중 9건 '매수', 목표가 달성률은 19%</a></li>
+      <li><a href="https://developer.riotgames.com/docs/faqs">Riot Developer Portal — FAQ / Rate Limiting</a> · <a href="https://gist.github.com/brcooley/8429583561c47b248f80">lolesports 비공식 API 문서</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/2026_League_of_Legends_World_Championship">2026 League of Legends World Championship — 10/15 ~ 11/14</a></li>
+      <li><a href="https://finance.naver.com/research/company_list.naver">네이버 금융 리서치</a> · <a href="https://consensus.hankyung.com/">한경컨센서스</a></li>
+      <li><a href="https://www.khan.co.kr/article/202608181655001/">경향신문 — 폴리마켓 국내 접속 차단 (2026-08-18)</a></li>
+      <li><a href="https://github.com/seeeturtle/kbo">비공식 KBO 경기 결과 API</a> · <a href="https://docs.upbit.com/docs/user-request-guide">업비트 Open API</a></li>
+    </ul>
+
+    <p class="colophon">
+      BMAD 브레인스토밍 · 2차 · 회의 후보 21건 반영 · 149개 세션 엔트리<br>
+      전체 기록: <code>_bmad-output/brainstorming/brainstorm-ssafy-blockchain-prediction-topic-2026-08-21/.memlog.md</code>
+    </p>
+  </div>
+
+</div>

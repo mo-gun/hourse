@@ -1,0 +1,1358 @@
+[
+ {
+  "id": "15105087",
+  "title": "한국마사회_말훈련내역",
+  "files": [],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-04-19",
+  "doc": null,
+  "error": "no docx",
+  "label": "말훈련내역"
+ },
+ {
+  "id": "15063955",
+  "title": "한국마사회_경주마장제정보",
+  "files": [],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-04-19",
+  "doc": null,
+  "error": "no docx",
+  "label": "경주마장제정보"
+ },
+ {
+  "id": "15059488",
+  "title": "한국마사회 씨수말 정보",
+  "files": [],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-04-19",
+  "doc": null,
+  "error": "no docx",
+  "label": "씨수말정보"
+ },
+ {
+  "id": "15058115",
+  "title": "한국마사회 경주마 상세정보",
+  "files": [],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-07",
+  "doc": null,
+  "error": "no docx",
+  "label": "경주마상세정보"
+ },
+ {
+  "id": "15057985",
+  "title": "한국마사회 마필종합 상세정보",
+  "files": [],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-04-19",
+  "doc": null,
+  "error": "no docx",
+  "label": "마필종합상세정보"
+ },
+ {
+  "id": "15056828",
+  "title": "한국마사회 기수 상세정보",
+  "files": [],
+  "traffic": "개발계정 : / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-15",
+  "doc": null,
+  "error": "no docx",
+  "label": "기수상세정보"
+ },
+ {
+  "id": "15056591",
+  "title": "한국마사회 기수 성적 정보",
+  "files": [],
+  "traffic": "개발계정 : / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-15",
+  "doc": null,
+  "error": "no docx",
+  "label": "기수성적정보"
+ },
+ {
+  "id": "15119558",
+  "title": "한국마사회_경마시행당일_확정배당율종합",
+  "files": [],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-07",
+  "doc": null,
+  "error": "no docx",
+  "label": "당일확정배당율종합"
+ },
+ {
+  "id": "15089503",
+  "title": "한국마사회_경주마명단",
+  "files": [
+   [
+    "API228_한국마사회_경주마명단.docx",
+    "FILE_000000002443026",
+    "1"
+   ]
+  ],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-04-19",
+  "doc": "API228_한국마사회_경주마명단.docx",
+  "endpoints": [
+   "http://apis.data.go.kr/B551015/racehorselist/getracehorselist",
+   "http://apis.data.go.kr/B551015/racehorselist"
+  ],
+  "endpoint": "http://apis.data.go.kr/B551015/racehorselist/getracehorselist",
+  "operations": [
+   "racehorselist"
+  ],
+  "request_fields": [
+   {
+    "en": "serviceKey",
+    "ko": "서비스키",
+    "size": "4",
+    "req": "1",
+    "sample": "-",
+    "desc": "공공데이터포털에서 받은 인증키"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과 수",
+    "size": "4",
+    "req": "0",
+    "sample": "10",
+    "desc": "한 페이지 결과 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 번호",
+    "size": "4",
+    "req": "0",
+    "sample": "1",
+    "desc": "페이지 번호"
+   },
+   {
+    "en": "meet",
+    "ko": "경마장번호",
+    "size": "1",
+    "req": "0",
+    "sample": "1",
+    "desc": "경마장번호(서울:1, 제주:2, 부경:3) 입력 없을시 default로 1 고정"
+   },
+   {
+    "en": "rank",
+    "ko": "경주마등급",
+    "size": "10",
+    "req": "0",
+    "sample": "외1",
+    "desc": "경주마등급(서울/부경:-- 외1,외2,외3,외4,국1,국2,국3,국4,국5,국6,국미검,외미검 // 제주 : 한1, 한2, 한3, 한4, 제1, 제2, 제3, 제4, 제5, 미검마)"
+   }
+  ],
+  "response_fields": [
+   {
+    "en": "resultCode",
+    "ko": "결과코드",
+    "size": "2",
+    "req": "1",
+    "sample": "00",
+    "desc": "결과코드"
+   },
+   {
+    "en": "resultMsg",
+    "ko": "결과메시지",
+    "size": "50",
+    "req": "1",
+    "sample": "NORMAL SERVICE",
+    "desc": "결과메시지"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과수",
+    "size": "4",
+    "req": "1",
+    "sample": "10",
+    "desc": "한 페이지당 표출데이터 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 수",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "페이지 수"
+   },
+   {
+    "en": "totalCount",
+    "ko": "데이터 총 개수",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "데이터 총 개수"
+   },
+   {
+    "en": "meet",
+    "ko": "경마장번호(1:서울,2:제주,3:부경)",
+    "size": "1",
+    "req": "1",
+    "sample": "1",
+    "desc": "경마장번호(1:서울,2:제주,3:부경)"
+   },
+   {
+    "en": "hrNo",
+    "ko": "마번",
+    "size": "6",
+    "req": "1",
+    "sample": "036488",
+    "desc": "마번"
+   },
+   {
+    "en": "hrName",
+    "ko": "마명",
+    "size": "20",
+    "req": "1",
+    "sample": "샴로커",
+    "desc": "마명"
+   },
+   {
+    "en": "nameSp",
+    "ko": "소속조",
+    "size": "20",
+    "req": "1",
+    "sample": "40조",
+    "desc": "소속조"
+   },
+   {
+    "en": "rank",
+    "ko": "경주마등급",
+    "size": "10",
+    "req": "1",
+    "sample": "외1",
+    "desc": "경주마등급"
+   },
+   {
+    "en": "prdCty",
+    "ko": "산지",
+    "size": "200",
+    "req": "1",
+    "sample": "미국",
+    "desc": "산지"
+   },
+   {
+    "en": "sex",
+    "ko": "성별",
+    "size": "200",
+    "req": "1",
+    "sample": "수",
+    "desc": "성별"
+   },
+   {
+    "en": "age",
+    "ko": "연령",
+    "size": "3",
+    "req": "1",
+    "sample": "8",
+    "desc": "연령"
+   },
+   {
+    "en": "stDate",
+    "ko": "시작일자",
+    "size": "8",
+    "req": "1",
+    "sample": "20161003",
+    "desc": "시작일자"
+   },
+   {
+    "en": "minRcDate",
+    "ko": "데뷔일자",
+    "size": "8",
+    "req": "1",
+    "sample": "20150808",
+    "desc": "데뷔일자"
+   },
+   {
+    "en": "jun",
+    "ko": "전적",
+    "size": "30",
+    "req": "1",
+    "sample": "48(6/12/10)",
+    "desc": "전적"
+   },
+   {
+    "en": "prizeYear",
+    "ko": "1년총수득상금",
+    "size": "12",
+    "req": "1",
+    "sample": "34700000",
+    "desc": "1년총수득상금"
+   },
+   {
+    "en": "prizetsum",
+    "ko": "총수득상금",
+    "size": "12",
+    "req": "1",
+    "sample": "1283950000",
+    "desc": "총수득상금"
+   },
+   {
+    "en": "cnt",
+    "ko": "비고",
+    "size": "10",
+    "req": "0",
+    "sample": "-",
+    "desc": "비고"
+   },
+   {
+    "en": "spTerm",
+    "ko": "최근출전경주",
+    "size": "20",
+    "req": "1",
+    "sample": "20210822-9R",
+    "desc": "최근출전경주"
+   },
+   {
+    "en": "rating1",
+    "ko": "레이팅1",
+    "size": "6",
+    "req": "1",
+    "sample": "125",
+    "desc": "레이팅1"
+   },
+   {
+    "en": "rating2",
+    "ko": "레이팅2",
+    "size": "6",
+    "req": "1",
+    "sample": "125",
+    "desc": "레이팅2"
+   },
+   {
+    "en": "rating3",
+    "ko": "레이팅3",
+    "size": "6",
+    "req": "1",
+    "sample": "122",
+    "desc": "레이팅3"
+   },
+   {
+    "en": "rating4",
+    "ko": "레이팅4",
+    "size": "6",
+    "req": "1",
+    "sample": "123",
+    "desc": "레이팅4"
+   },
+   {
+    "en": "chulYn",
+    "ko": "출전여부(1:출전, 0:미출전)",
+    "size": "1",
+    "req": "1",
+    "sample": "0",
+    "desc": "출전여부(1:출전, 0:미출전)"
+   }
+  ],
+  "n_resp": 25,
+  "label": "경주마명단"
+ },
+ {
+  "id": "15086329",
+  "title": "한국마사회_현직기수정보",
+  "files": [
+   [
+    "API226_한국마사회 현직기수정보.docx",
+    "FILE_000000002437433",
+    "1"
+   ]
+  ],
+  "traffic": "개발계정 : / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-20",
+  "doc": "API226_한국마사회 현직기수정보.docx",
+  "endpoints": [
+   "http://apis.data.go.kr/B551015/currentjockeyInfo/getcurrentjockeyinfo",
+   "http://apis.data.go.kr/B551015/currentjockeyInfo"
+  ],
+  "endpoint": "http://apis.data.go.kr/B551015/currentjockeyInfo/getcurrentjockeyinfo",
+  "operations": [
+   "getcurrentjockeyInfo"
+  ],
+  "request_fields": [
+   {
+    "en": "serviceKey",
+    "ko": "서비스키",
+    "size": "4",
+    "req": "1",
+    "sample": "-",
+    "desc": "공공데이터포털에서 받은 인증키"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과 수",
+    "size": "4",
+    "req": "0",
+    "sample": "10",
+    "desc": "한 페이지 결과 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 번호",
+    "size": "4",
+    "req": "0",
+    "sample": "1",
+    "desc": "페이지 번호"
+   },
+   {
+    "en": "jk_name",
+    "ko": "기수명",
+    "size": "20",
+    "req": "0",
+    "sample": "김옥성",
+    "desc": "기수명"
+   },
+   {
+    "en": "jk_no",
+    "ko": "기수번호",
+    "size": "6",
+    "req": "0",
+    "sample": "080100",
+    "desc": "기수번호"
+   },
+   {
+    "en": "meet",
+    "ko": "시행경마장구분",
+    "size": "10",
+    "req": "0",
+    "sample": "1",
+    "desc": "시행경마장구분(1.서울,2.제주,3.부산)"
+   }
+  ],
+  "response_fields": [
+   {
+    "en": "resultCode",
+    "ko": "결과코드",
+    "size": "2",
+    "req": "1",
+    "sample": "00",
+    "desc": "결과코드"
+   },
+   {
+    "en": "resultMsg",
+    "ko": "결과메시지",
+    "size": "50",
+    "req": "1",
+    "sample": "NORMAL SERVICE",
+    "desc": "결과메시지"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과수",
+    "size": "4",
+    "req": "1",
+    "sample": "10",
+    "desc": "한 페이지당 표출데이터 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 수",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "페이지 수"
+   },
+   {
+    "en": "totalCount",
+    "ko": "데이터 총 개수",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "데이터 총 개수"
+   },
+   {
+    "en": "meet",
+    "ko": "시행경마장명",
+    "size": "10",
+    "req": "1",
+    "sample": "서울",
+    "desc": "시행경마장명"
+   },
+   {
+    "en": "jkName",
+    "ko": "기수명",
+    "size": "20",
+    "req": "1",
+    "sample": "김옥성",
+    "desc": "기수명"
+   },
+   {
+    "en": "jkNo",
+    "ko": "기수번호",
+    "size": "6",
+    "req": "1",
+    "sample": "080100",
+    "desc": "기수번호"
+   },
+   {
+    "en": "part",
+    "ko": "소속조",
+    "size": "20",
+    "req": "1",
+    "sample": "43",
+    "desc": "소속조"
+   },
+   {
+    "en": "birthday",
+    "ko": "생년월일",
+    "size": "10",
+    "req": "1",
+    "sample": "********",
+    "desc": "생년월일"
+   },
+   {
+    "en": "age",
+    "ko": "나이",
+    "size": "3,0",
+    "req": "1",
+    "sample": "54",
+    "desc": "나이"
+   },
+   {
+    "en": "debut",
+    "ko": "데뷔일자",
+    "size": "8",
+    "req": "1",
+    "sample": "19870401",
+    "desc": "데뷔일자"
+   },
+   {
+    "en": "spDate",
+    "ko": "은퇴일자",
+    "size": "8",
+    "req": "0",
+    "sample": "-",
+    "desc": "은퇴일자"
+   },
+   {
+    "en": "wgPart",
+    "ko": "기승가능중량_소속조",
+    "size": "4,1",
+    "req": "1",
+    "sample": "52",
+    "desc": "기승가능중량_소속조"
+   },
+   {
+    "en": "wgOther",
+    "ko": "기승가능중량_타조",
+    "size": "4,1",
+    "req": "1",
+    "sample": "52",
+    "desc": "기승가능중량_타조"
+   },
+   {
+    "en": "rcCntT",
+    "ko": "통산총출주횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "8289",
+    "desc": "통산총출주횟수"
+   },
+   {
+    "en": "ord1CntT",
+    "ko": "통산1착횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "539",
+    "desc": "통산1착횟수"
+   },
+   {
+    "en": "ord2CntT",
+    "ko": "통산2착횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "638",
+    "desc": "통산2착횟수"
+   },
+   {
+    "en": "ord3CntT",
+    "ko": "통산3착횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "744",
+    "desc": "통산3착횟수"
+   },
+   {
+    "en": "rcCntY",
+    "ko": "최근1년총출주횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "198",
+    "desc": "최근1년총출주횟수"
+   },
+   {
+    "en": "ord1CntY",
+    "ko": "최근1년1착횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "3",
+    "desc": "최근1년1착횟수"
+   },
+   {
+    "en": "ord2CntY",
+    "ko": "최근1년2착횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "4",
+    "desc": "최근1년2착횟수"
+   },
+   {
+    "en": "ord3CntY",
+    "ko": "최근1년3착횟수",
+    "size": "5,0",
+    "req": "1",
+    "sample": "17",
+    "desc": "최근1년3착횟수"
+   }
+  ],
+  "n_resp": 23,
+  "label": "현직기수정보"
+ },
+ {
+  "id": "15057090",
+  "title": "한국마사회_복승식 확정배당율 정보",
+  "files": [
+   [
+    "API5_한국마사회 복승식 확정배당율.docx",
+    "FILE_000000002722228",
+    "1"
+   ]
+  ],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-08",
+  "doc": "API5_한국마사회 복승식 확정배당율.docx",
+  "endpoints": [
+   "http://apis.data.go.kr/B551015/API5/quinellaOddsInfo",
+   "http://apis.data.go.kr/B551015/API5"
+  ],
+  "endpoint": "http://apis.data.go.kr/B551015/API5/quinellaOddsInfo",
+  "operations": [
+   "quinellaOddsInfo"
+  ],
+  "request_fields": [
+   {
+    "en": "ServiceKey",
+    "ko": "서비스키",
+    "size": "4",
+    "req": "1",
+    "sample": "-",
+    "desc": "공공데이터포털에서 받은 인증키"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과 수",
+    "size": "4",
+    "req": "1",
+    "sample": "10",
+    "desc": "한 페이지 결과 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 번호",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "페이지 번호"
+   },
+   {
+    "en": "meet",
+    "ko": "시행경마장구분",
+    "size": "8",
+    "req": "0",
+    "sample": "1",
+    "desc": "시행경마장구분(1.서울,2.제주,3.부산)"
+   },
+   {
+    "en": "rc_date",
+    "ko": "경주일",
+    "size": "8",
+    "req": "0",
+    "sample": "20230430",
+    "desc": "경주일(YYYYMDD형식)"
+   },
+   {
+    "en": "rc_month",
+    "ko": "경주월",
+    "size": "10",
+    "req": "0",
+    "sample": "202304",
+    "desc": "경주월(YYYYMM형식)"
+   },
+   {
+    "en": "rc_no",
+    "ko": "경주번호",
+    "size": "10",
+    "req": "0",
+    "sample": "1",
+    "desc": "경주번호"
+   }
+  ],
+  "response_fields": [
+   {
+    "en": "meet",
+    "ko": "시행경마장명",
+    "size": "10",
+    "req": "1",
+    "sample": "서울",
+    "desc": "시행경마장명"
+   },
+   {
+    "en": "rcDate",
+    "ko": "경주일자",
+    "size": "10",
+    "req": "1",
+    "sample": "20230430",
+    "desc": "경주일자"
+   },
+   {
+    "en": "rcNo",
+    "ko": "경주번호",
+    "size": "2,0",
+    "req": "1",
+    "sample": "1",
+    "desc": "경주번호"
+   },
+   {
+    "en": "chulNo1",
+    "ko": "선착마출주번호",
+    "size": "3",
+    "req": "1",
+    "sample": "1",
+    "desc": "선착마출주번호"
+   },
+   {
+    "en": "chulNo2",
+    "ko": "후착마출주번호",
+    "size": "3",
+    "req": "1",
+    "sample": "2",
+    "desc": "후착마출주번호"
+   },
+   {
+    "en": "odds",
+    "ko": "확정배당율",
+    "size": "8,1",
+    "req": "1",
+    "sample": "76.7",
+    "desc": "확정배당율"
+   }
+  ],
+  "n_resp": 6,
+  "label": "복승식확정배당율"
+ },
+ {
+  "id": "15059267",
+  "title": "한국마사회 승식별 최고배당률 정보",
+  "files": [
+   [
+    "API35_한국마사회 승식별 최고배당률 정보.docx",
+    "FILE_000000001539931",
+    "0"
+   ]
+  ],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-09",
+  "doc": "API35_한국마사회 승식별 최고배당률 정보.docx",
+  "endpoints": [
+   "http://apis.data.go.kr/B551015/API35/highestDividendRateInfo",
+   "http://apis.data.go.kr/B551015/API35"
+  ],
+  "endpoint": "http://apis.data.go.kr/B551015/API35/highestDividendRateInfo",
+  "operations": [
+   "highestDividendRateInfo"
+  ],
+  "request_fields": [
+   {
+    "en": "ServiceKey",
+    "ko": "서비스키",
+    "size": "4",
+    "req": "1",
+    "sample": "-",
+    "desc": "공공데이터포털에서 받은 인증키"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과 수",
+    "size": "4",
+    "req": "1",
+    "sample": "10",
+    "desc": "한 페이지 결과 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 번호",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "페이지 번호"
+   }
+  ],
+  "response_fields": [
+   {
+    "en": "meet",
+    "ko": "시행경마장명",
+    "size": "10",
+    "req": "1",
+    "sample": "서울",
+    "desc": "시행경마장명"
+   },
+   {
+    "en": "rcDate",
+    "ko": "경주일자",
+    "size": "10",
+    "req": "1",
+    "sample": "20160924",
+    "desc": "경주일자"
+   },
+   {
+    "en": "rcNo",
+    "ko": "경주번호",
+    "size": "2,0",
+    "req": "1",
+    "sample": "10",
+    "desc": "경주번호"
+   },
+   {
+    "en": "pool",
+    "ko": "승식",
+    "size": "8,1",
+    "req": "1",
+    "sample": "삼쌍승식",
+    "desc": "승식"
+   },
+   {
+    "en": "chulNo1",
+    "ko": "1착마출주번호",
+    "size": "3",
+    "req": "1",
+    "sample": "2",
+    "desc": "1착마출주번호"
+   },
+   {
+    "en": "chulNo2",
+    "ko": "2착마출주번호",
+    "size": "3",
+    "req": "1",
+    "sample": "11",
+    "desc": "2착마출주번호"
+   },
+   {
+    "en": "chulNo3",
+    "ko": "3착마출주번호",
+    "size": "3",
+    "req": "1",
+    "sample": "12",
+    "desc": "3착마출주번호"
+   },
+   {
+    "en": "odds",
+    "ko": "배당률",
+    "size": "8,1",
+    "req": "1",
+    "sample": "30812.4",
+    "desc": "배당률"
+   },
+   {
+    "en": "weather",
+    "ko": "날씨",
+    "size": "20",
+    "req": "1",
+    "sample": "맑음",
+    "desc": "날씨"
+   },
+   {
+    "en": "track",
+    "ko": "주로상태",
+    "size": "20",
+    "req": "1",
+    "sample": "양호",
+    "desc": "주로상태"
+   }
+  ],
+  "n_resp": 10,
+  "label": "승식별최고배당률"
+ },
+ {
+  "id": "15063972",
+  "title": "한국마사회_발매금액정보",
+  "files": [],
+  "traffic": "개발계정 : / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-15",
+  "doc": null,
+  "error": "no docx",
+  "label": "발매금액정보"
+ },
+ {
+  "id": "15058677",
+  "title": "한국마사회 출전표 상세정보",
+  "files": [
+   [
+    "API26_2_한국마사회 출전표 상세정보.docx",
+    "FILE_000000003005389",
+    "1"
+   ]
+  ],
+  "traffic": "개발계정 : 3,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능",
+  "license": "제한 없음",
+  "updated": "2026-08-06",
+  "doc": "API26_2_한국마사회 출전표 상세정보.docx",
+  "endpoints": [
+   "http://apis.data.go.kr/B551015/API26_2/entrySheet_2",
+   "http://apis.data.go.kr/B551015/API26_2"
+  ],
+  "endpoint": "http://apis.data.go.kr/B551015/API26_2/entrySheet_2",
+  "operations": [
+   "entrySheet"
+  ],
+  "request_fields": [
+   {
+    "en": "ServiceKey",
+    "ko": "서비스키",
+    "size": "4",
+    "req": "1",
+    "sample": "-",
+    "desc": "공공데이터포털에서 받은 인증키"
+   },
+   {
+    "en": "numOfRows",
+    "ko": "한 페이지 결과 수",
+    "size": "4",
+    "req": "1",
+    "sample": "10",
+    "desc": "한 페이지 결과 수"
+   },
+   {
+    "en": "pageNo",
+    "ko": "페이지 번호",
+    "size": "4",
+    "req": "1",
+    "sample": "1",
+    "desc": "페이지 번호"
+   },
+   {
+    "en": "meet",
+    "ko": "시행경마장",
+    "size": "8",
+    "req": "0",
+    "sample": "1",
+    "desc": "1:서울, 2:제주, 3:부산경남"
+   },
+   {
+    "en": "rc_date",
+    "ko": "경주일",
+    "size": "8",
+    "req": "0",
+    "sample": "20220903",
+    "desc": "경주일(YYYYMDD형식)"
+   },
+   {
+    "en": "rc_month",
+    "ko": "경주월",
+    "size": "8",
+    "req": "0",
+    "sample": "202209",
+    "desc": "경주월(YYYYMM형식)"
+   }
+  ],
+  "response_fields": [
+   {
+    "en": "meet",
+    "ko": "시행경마장명",
+    "size": "10",
+    "req": "1",
+    "sample": "서울",
+    "desc": "시행경마장명"
+   },
+   {
+    "en": "rcDate",
+    "ko": "경주일자",
+    "size": "100",
+    "req": "1",
+    "sample": "20220903",
+    "desc": "경주일자"
+   },
+   {
+    "en": "rcDay",
+    "ko": "경주요일",
+    "size": "6",
+    "req": "1",
+    "sample": "토요일",
+    "desc": "경주요일"
+   },
+   {
+    "en": "rcNo",
+    "ko": "경주번호",
+    "size": "2,0",
+    "req": "1",
+    "sample": "1",
+    "desc": "경주번호"
+   },
+   {
+    "en": "chulNo",
+    "ko": "마번(출주번호)",
+    "size": "3",
+    "req": "1",
+    "sample": "1",
+    "desc": "마번(출주번호)"
+   },
+   {
+    "en": "hrName",
+    "ko": "마명",
+    "size": "30",
+    "req": "1",
+    "sample": "인생의감동",
+    "desc": "마명"
+   },
+   {
+    "en": "hrNameEn",
+    "ko": "영문마명",
+    "size": "100",
+    "req": "1",
+    "sample": "INSAENGUI GAMDONG",
+    "desc": "영문마명"
+   },
+   {
+    "en": "hrNo",
+    "ko": "마번(고유번호)",
+    "size": "6",
+    "req": "1",
+    "sample": "0046350",
+    "desc": "마번(고유번호)"
+   },
+   {
+    "en": "prd",
+    "ko": "산지",
+    "size": "200",
+    "req": "1",
+    "sample": "한국",
+    "desc": "산지"
+   },
+   {
+    "en": "sex",
+    "ko": "성별",
+    "size": "4",
+    "req": "1",
+    "sample": "암",
+    "desc": "성별"
+   },
+   {
+    "en": "age",
+    "ko": "연령",
+    "size": "3,0",
+    "req": "1",
+    "sample": "2",
+    "desc": "연령"
+   },
+   {
+    "en": "wgBudam",
+    "ko": "부담중량",
+    "size": "4,1",
+    "req": "1",
+    "sample": "53",
+    "desc": "부담중량"
+   },
+   {
+    "en": "rating",
+    "ko": "레이팅",
+    "size": "6,0",
+    "req": "1",
+    "sample": "-",
+    "desc": "레이팅"
+   },
+   {
+    "en": "jkName",
+    "ko": "기수명",
+    "size": "20",
+    "req": "1",
+    "sample": "조한별",
+    "desc": "기수명"
+   },
+   {
+    "en": "jkNameEn",
+    "ko": "영문기수이름",
+    "size": "100",
+    "req": "1",
+    "sample": "Cho Han Byeol",
+    "desc": "영문기수이름"
+   },
+   {
+    "en": "jkNo",
+    "ko": "기수번호",
+    "size": "6",
+    "req": "1",
+    "sample": "080515",
+    "desc": "기수번호"
+   },
+   {
+    "en": "trName",
+    "ko": "조교사명",
+    "size": "20",
+    "req": "1",
+    "sample": "김동균",
+    "desc": "조교사명"
+   },
+   {
+    "en": "trNameEn",
+    "ko": "영문조교사이름",
+    "size": "100",
+    "req": "1",
+    "sample": "Kim Dong Kyun",
+    "desc": "영문조교사이름"
+   },
+   {
+    "en": "trNo",
+    "ko": "조교사번호",
+    "size": "6",
+    "req": "1",
+    "sample": "070170",
+    "desc": "조교사번호"
+   },
+   {
+    "en": "owName",
+    "ko": "마주명",
+    "size": "20",
+    "req": "1",
+    "sample": "굿원",
+    "desc": "마주명"
+   },
+   {
+    "en": "owNameEn",
+    "ko": "영문마주이름",
+    "size": "100",
+    "req": "1",
+    "sample": "Good One",
+    "desc": "영문마주이름"
+   },
+   {
+    "en": "owNo",
+    "ko": "마주번호",
+    "size": "6",
+    "req": "1",
+    "sample": "121024",
+    "desc": "마주번호"
+   },
+   {
+    "en": "ilsu",
+    "ko": "경마일수",
+    "size": "12,0",
+    "req": "1",
+    "sample": "65",
+    "desc": "경마일수"
+   },
+   {
+    "en": "rcDist",
+    "ko": "경주거리",
+    "size": "12,0",
+    "req": "1",
+    "sample": "1000",
+    "desc": "경주거리"
+   },
+   {
+    "en": "dusu",
+    "ko": "두수",
+    "size": "12,0",
+    "req": "1",
+    "sample": "11",
+    "desc": "두수"
+   },
+   {
+    "en": "rank",
+    "ko": "등급조건",
+    "size": "200",
+    "req": "1",
+    "sample": "국6등급",
+    "desc": "등급조건"
+   },
+   {
+    "en": "prizeCond",
+    "ko": "상금조건",
+    "size": "200",
+    "req": "1",
+    "sample": "R0~0",
+    "desc": "상금조건"
+   },
+   {
+    "en": "ageCond",
+    "ko": "연령조건",
+    "size": "200",
+    "req": "1",
+    "sample": "2세",
+    "desc": "연령조건"
+   },
+   {
+    "en": "sexCond",
+    "ko": "성별조건",
+    "size": "200",
+    "req": "1",
+    "sample": "오픈",
+    "desc": "성별조건"
+   },
+   {
+    "en": "stTime",
+    "ko": "출발시각",
+    "size": "100",
+    "req": "1",
+    "sample": "출발 : 10: 45",
+    "desc": "출발시각"
+   },
+   {
+    "en": "budam",
+    "ko": "부담구분",
+    "size": "100",
+    "req": "1",
+    "sample": "별정A",
+    "desc": "부담구분"
+   },
+   {
+    "en": "rcName",
+    "ko": "경주명",
+    "size": "100",
+    "req": "1",
+    "sample": "일반",
+    "desc": "경주명"
+   },
+   {
+    "en": "chaksun1",
+    "ko": "1착상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "13680000",
+    "desc": "1착상금"
+   },
+   {
+    "en": "chaksun2",
+    "ko": "2착상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "5040000",
+    "desc": "2착상금"
+   },
+   {
+    "en": "chaksun3",
+    "ko": "3착상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "3120000",
+    "desc": "3착상금"
+   },
+   {
+    "en": "chaksun4",
+    "ko": "4착상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "1200000",
+    "desc": "4착상금"
+   },
+   {
+    "en": "chaksun5",
+    "ko": "5착상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "960000",
+    "desc": "5착상금"
+   },
+   {
+    "en": "chaksunT",
+    "ko": "통산수득상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "3000000",
+    "desc": "통산수득상금"
+   },
+   {
+    "en": "chaksunY",
+    "ko": "최근1년수득상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "3000000",
+    "desc": "최근1년수득상금"
+   },
+   {
+    "en": "chaksun_6m",
+    "ko": "최근6개월수득상금",
+    "size": "12,0",
+    "req": "1",
+    "sample": "3000000",
+    "desc": "최근6개월수득상금"
+   },
+   {
+    "en": "ord1CntT",
+    "ko": "통산1위횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "0",
+    "desc": "통산1위횟수"
+   },
+   {
+    "en": "ord2CntT",
+    "ko": "통산2위횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "0",
+    "desc": "통산2위횟수"
+   },
+   {
+    "en": "ord3CntT",
+    "ko": "통산3위횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "0",
+    "desc": "통산3위횟수"
+   },
+   {
+    "en": "rcCntT",
+    "ko": "통산출주횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "1",
+    "desc": "통산출주횟수"
+   },
+   {
+    "en": "ord1CntY",
+    "ko": "최근1년1위횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "0",
+    "desc": "최근1년1위횟수"
+   },
+   {
+    "en": "ord2CntY",
+    "ko": "최근1년2위횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "0",
+    "desc": "최근1년2위횟수"
+   },
+   {
+    "en": "ord3CntY",
+    "ko": "최근1년3위횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "0",
+    "desc": "최근1년3위횟수"
+   },
+   {
+    "en": "rcCntY",
+    "ko": "최근1년출주횟수",
+    "size": "2,0",
+    "req": "1",
+    "sample": "1",
+    "desc": "최근1년출주횟수"
+   }
+  ],
+  "n_resp": 48,
+  "label": "출전표상세정보"
+ }
+]

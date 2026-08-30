@@ -1,0 +1,687 @@
+<title>경마 주제 판정서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+
+<style>
+:root{
+  --bg:#F3F6F8; --surface:#FFFFFF; --surface-2:#E9EEF2; --surface-3:#DCE5EB;
+  --text:#131E26; --muted:#55646F; --border:#D5DEE4; --rule:#C3D0D9;
+  --accent:#1F5F8B; --accent-soft:#E3EDF4; --accent-ink:#164767;
+  --ok:#2C6A4A; --ok-soft:#E2EFE7;
+  --caution:#8F6414; --caution-soft:#F6EEDC;
+  --danger:#9E362B; --danger-soft:#F7E5E2;
+  --shadow:0 1px 2px rgba(19,30,38,.06), 0 8px 24px rgba(19,30,38,.05);
+  --display:"Nanum Myeongjo", "Apple SD Gothic Neo", "Malgun Gothic", serif;
+  --body:"Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1418; --surface:#151E24; --surface-2:#1C272E; --surface-3:#243039;
+    --text:#E3EAEE; --muted:#93A2AB; --border:#263239; --rule:#31404A;
+    --accent:#5BA3D0; --accent-soft:#152833; --accent-ink:#8CC3E4;
+    --ok:#63B487; --ok-soft:#132A20;
+    --caution:#D3A24A; --caution-soft:#2B2314;
+    --danger:#DE7C6D; --danger-soft:#2E1815;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1418; --surface:#151E24; --surface-2:#1C272E; --surface-3:#243039;
+  --text:#E3EAEE; --muted:#93A2AB; --border:#263239; --rule:#31404A;
+  --accent:#5BA3D0; --accent-soft:#152833; --accent-ink:#8CC3E4;
+  --ok:#63B487; --ok-soft:#132A20;
+  --caution:#D3A24A; --caution-soft:#2B2314;
+  --danger:#DE7C6D; --danger-soft:#2E1815;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--body); font-size:16px; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--display); text-wrap:balance; line-height:1.35; margin:0}
+a{color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px}
+a:focus-visible,summary:focus-visible,.toc a:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+code,.mono{font-family:var(--mono); font-size:.88em; font-variant-numeric:tabular-nums}
+code{background:var(--surface-2); padding:.1em .38em; border-radius:3px; word-break:break-all}
+
+/* ---------- shell ---------- */
+.shell{max-width:1180px; margin:0 auto; padding:0 24px 96px}
+.layout{display:grid; grid-template-columns:1fr; gap:48px}
+@media(min-width:1040px){
+  .layout{grid-template-columns:216px minmax(0,1fr); gap:56px; align-items:start}
+}
+main{min-width:0; max-width:74ch}
+
+/* ---------- masthead ---------- */
+.masthead{border-bottom:2px solid var(--text); padding:44px 0 20px; margin-bottom:36px}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 14px
+}
+.masthead h1{font-size:clamp(30px,5.2vw,46px); font-weight:800; letter-spacing:-.01em}
+.masthead .sub{color:var(--muted); margin:12px 0 0; font-size:17px; max-width:62ch}
+.meta{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+  gap:2px; margin-top:28px; background:var(--rule); border:1px solid var(--rule)
+}
+.meta div{background:var(--bg); padding:10px 13px}
+.meta dt{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0}
+.meta dd{margin:3px 0 0; font-size:14px; font-weight:500}
+
+/* ---------- toc ---------- */
+.toc{position:sticky; top:24px; font-size:13.5px; line-height:1.5}
+.toc-label{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border)}
+.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px}
+.toc a{color:var(--muted); text-decoration:none; display:block; border-left:2px solid transparent; padding-left:11px}
+.toc a:hover{color:var(--accent); border-left-color:var(--accent)}
+.toc .num{font-family:var(--mono); font-size:10.5px; color:var(--rule); margin-right:6px}
+@media(max-width:1039px){.toc{display:none}}
+
+/* ---------- verdict ---------- */
+.verdict{
+  background:var(--surface); border:1px solid var(--border); border-top:4px solid var(--caution);
+  border-radius:3px; padding:30px 30px 26px; box-shadow:var(--shadow); margin-bottom:44px
+}
+.verdict-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:14px; margin-bottom:6px}
+.verdict-head h2{font-size:27px; font-weight:800}
+.verdict .lede{font-size:17px; margin:14px 0 0; color:var(--text)}
+.verdict .pull{
+  font-family:var(--display); font-weight:700; font-size:19px; line-height:1.5;
+  border-left:3px solid var(--caution); padding:2px 0 2px 18px; margin:24px 0 0; color:var(--text)
+}
+.three{display:flex; flex-direction:column; gap:16px; margin:26px 0 0; padding:0; list-style:none; counter-reset:r}
+.three li{position:relative; padding-left:34px; counter-increment:r; font-size:15.5px; line-height:1.7}
+.three li::before{
+  content:counter(r); position:absolute; left:0; top:3px;
+  width:22px; height:22px; border-radius:50%; background:var(--danger-soft); color:var(--danger);
+  font-family:var(--mono); font-size:11px; font-weight:600;
+  display:flex; align-items:center; justify-content:center
+}
+
+/* ---------- sections ---------- */
+section{margin-bottom:56px; scroll-margin-top:20px}
+section > h2{
+  font-size:24px; font-weight:800; padding-bottom:11px;
+  border-bottom:1px solid var(--rule); margin-bottom:22px
+}
+section > h2 .kicker{font-family:var(--mono); font-size:12px; font-weight:600; color:var(--accent); letter-spacing:.1em; display:block; margin-bottom:5px}
+h3{font-size:18px; font-weight:700; margin:32px 0 10px}
+h3:first-of-type{margin-top:0}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px; padding-left:20px}
+li{margin-bottom:7px}
+strong{font-weight:700}
+
+/* ---------- badges ---------- */
+.badge{
+  display:inline-flex; align-items:center; gap:5px; vertical-align:middle;
+  font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.06em;
+  padding:2px 8px; border-radius:2px; white-space:nowrap; text-transform:uppercase
+}
+.b-ok{background:var(--ok-soft); color:var(--ok); border:1px solid var(--ok)}
+.b-med{background:var(--surface-2); color:var(--muted); border:1px solid var(--rule)}
+.b-low{background:var(--caution-soft); color:var(--caution); border:1px dashed var(--caution)}
+.b-unver{
+  background:repeating-linear-gradient(135deg,var(--caution-soft),var(--caution-soft) 5px,transparent 5px,transparent 10px);
+  color:var(--caution); border:2px solid var(--caution); font-weight:600; padding:2px 9px
+}
+.b-danger{background:var(--danger-soft); color:var(--danger); border:1px solid var(--danger)}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto; margin:0 0 18px; border:1px solid var(--border); border-radius:3px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14px; line-height:1.6}
+th,td{text-align:left; padding:10px 13px; border-bottom:1px solid var(--border); vertical-align:top}
+thead th{
+  background:var(--surface-2); font-family:var(--mono); font-size:10.5px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap
+}
+tbody tr:last-child td{border-bottom:none}
+td.num,th.num{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+/* severity striping on the legal-status table */
+.sev td:first-child{border-left:4px solid transparent; font-weight:500}
+tr.s-ok td:first-child{border-left-color:var(--ok)}
+tr.s-warn td:first-child{border-left-color:var(--caution)}
+tr.s-bad td:first-child{border-left-color:var(--danger)}
+
+/* ---------- callouts ---------- */
+.note{
+  border:1px solid var(--border); border-left:3px solid var(--accent);
+  background:var(--surface); padding:16px 20px; border-radius:0 3px 3px 0; margin:0 0 20px
+}
+.note.warn{border-left-color:var(--caution)}
+.note.bad{border-left-color:var(--danger)}
+.note .nh{
+  font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted); display:block; margin-bottom:7px
+}
+.note p:last-child{margin-bottom:0}
+
+/* ---------- recs ---------- */
+.rec{border:1px solid var(--border); background:var(--surface); border-radius:3px; padding:20px 22px; margin-bottom:16px}
+.rec-head{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px}
+.rec-id{font-family:var(--mono); font-size:12px; font-weight:600; color:var(--accent); background:var(--accent-soft); padding:2px 8px; border-radius:2px}
+.rec h3{font-size:16.5px; margin:0; flex:1 1 260px}
+.rec .feeds{font-size:13px; color:var(--muted); border-top:1px dashed var(--rule); margin-top:14px; padding-top:10px}
+.rec .feeds b{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:600}
+
+/* ---------- chart ---------- */
+figure{margin:0 0 20px}
+figure svg{width:100%; height:auto; display:block; background:var(--surface); border:1px solid var(--border); border-radius:3px}
+figcaption{font-size:13px; color:var(--muted); margin-top:9px; line-height:1.6}
+
+/* ---------- appendix ---------- */
+details{border:1px solid var(--border); border-radius:3px; background:var(--surface); margin-bottom:18px}
+summary{
+  cursor:pointer; padding:14px 18px; font-family:var(--mono); font-size:12px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--text); list-style:none;
+  display:flex; align-items:center; justify-content:space-between; gap:12px
+}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▾"; color:var(--muted); font-size:14px; transition:transform .18s}
+details[open] summary::after{transform:rotate(180deg)}
+details[open] summary{border-bottom:1px solid var(--border)}
+.sources{font-size:13px}
+.sources td:first-child{font-family:var(--mono); font-weight:600; color:var(--accent); white-space:nowrap; width:1%}
+.sources td:nth-child(4),.sources td:nth-child(5){font-family:var(--mono); font-size:11.5px; color:var(--muted); white-space:nowrap}
+.sources td:last-child{white-space:nowrap; font-size:12px}
+sup.cite{font-family:var(--mono); font-size:10.5px; font-weight:600}
+sup.cite a{text-decoration:none; padding:0 1px}
+sup.cite a:hover{text-decoration:underline}
+
+/* ---------- staleness ---------- */
+.stale{display:flex; flex-direction:column; gap:0; border:1px solid var(--border); border-radius:3px; background:var(--surface); overflow:hidden}
+.stale-row{display:grid; grid-template-columns:1fr auto; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); align-items:center}
+.stale-row:last-child{border-bottom:none}
+.stale-row.urgent{background:var(--caution-soft)}
+.stale-row .cls{font-weight:500; font-size:14.5px}
+.stale-row .det{font-size:12.5px; color:var(--muted); display:block; margin-top:2px}
+.stale-row .when{font-family:var(--mono); font-size:12.5px; font-weight:600; white-space:nowrap}
+.stale-row.urgent .when{color:var(--caution)}
+
+footer{border-top:1px solid var(--rule); margin-top:56px; padding-top:20px; font-size:13px; color:var(--muted)}
+footer p{margin:0 0 7px}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+@media(max-width:560px){
+  .shell{padding:0 16px 64px}
+  .verdict{padding:22px 18px}
+  .masthead h1{font-size:28px}
+}
+</style>
+
+<div class="shell">
+
+<header class="masthead">
+  <p class="eyebrow">BMad Deep Recon · Technical Run · Deep · 실호출 검증 2026-08-27</p>
+  <h1>경마 주제 판정서</h1>
+  <p class="sub">SSAFY 블록체인 프로젝트(스마트 컨트랙트 기반 예측 시스템) 6인 7주 과제의 주제로 “경마 기반 AI 예측 플랫폼”을 확정할 것인가에 대한 결정 근거 리서치.</p>
+  <dl class="meta">
+    <div><dt>결정</dt><dd>주제 확정 여부</dd></div>
+    <div><dt>차원</dt><dd>A 데이터 · B 법률 · C 모델 · D 시장</dd></div>
+    <div><dt>조사일</dt><dd class="mono">2026-08-27</dd></div>
+    <div><dt>깊이</dt><dd>deep (12소스 / 3라운드)</dd></div>
+    <div><dt>검증 수준</dt><dd>normal</dd></div>
+    <div><dt>주장 원장</dt><dd class="mono">14건 · 확인 11 · 미확인 2 · <b>번복 1</b></dd></div>
+  </dl>
+</header>
+
+<div class="layout">
+
+  <nav class="toc" aria-label="목차">
+    <p class="toc-label">목차</p>
+    <ol>
+      <li><a href="#verdict"><span class="num">00</span>판정</a></li>
+      <li><a href="#a"><span class="num">A</span>데이터 실사용성</a></li>
+      <li><a href="#b"><span class="num">B</span>법률·사행성</a></li>
+      <li><a href="#c"><span class="num">C</span>모델 성립성</a></li>
+      <li><a href="#d"><span class="num">D</span>시장·경쟁</a></li>
+      <li><a href="#cross"><span class="num">05</span>교차 인사이트</a></li>
+      <li><a href="#contra"><span class="num">06</span>반대 근거</a></li>
+      <li><a href="#recs"><span class="num">07</span>권고</a></li>
+      <li><a href="#verify"><span class="num">08</span>실호출 검증</a></li>
+      <li><a href="#open"><span class="num">09</span>미해결 질문</a></li>
+      <li><a href="#src"><span class="num">10</span>출처</a></li>
+      <li><a href="#stale"><span class="num">11</span>신선도</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+  <!-- ══════════ VERDICT ══════════ -->
+  <div class="verdict" id="verdict">
+    <div class="verdict-head">
+      <h2>판정: 조건부 부(否)</h2>
+      <span class="badge b-low">근거 신뢰도 높음</span>
+    </div>
+    <p class="lede">경마를 프로젝트의 <strong>본체</strong>로 삼는 것은 권하지 않는다. <strong>다만 배제 사유는 8/21에 적었던 “사행성”이 아니다.</strong></p>
+
+    <p>기획서가 세운 데이터 가설은 대체로 옳았고, 오히려 기대보다 좋다. 한국마사회 API는 실존하고, 무료이며, <strong>이용허락범위가 “제한 없음”</strong>이고, 3주 전에도 갱신된 현행 API다<sup class="cite"><a href="#src-1">[1]</a><a href="#src-4">[4]</a><a href="#src-5">[5]</a></sup>. 개발계정 자동승인 3,000콜/일이면 5년 백필이 6인 분산으로 하루면 끝난다<sup class="cite"><a href="#src-3">[3]</a><a href="#src-4">[4]</a></sup>. <strong>데이터는 문제가 아니다.</strong> 문제는 다른 세 곳에서 나왔다.</p>
+
+    <ol class="three">
+      <li><strong>블록체인 당위성이 팀 자신의 3조건을 통과하지 못한다.</strong> 조건 2는 “결과 검증자가 거짓말하면 예치금을 잃음”이다. 그런데 경마 결과는 <strong>한국마사회라는 단일 공신력 기관이 확정 발표</strong>한다 — 거짓말할 검증자가 구조적으로 없다. 오라클 스테이킹·슬래싱·이의제기가 장식이 된다.</li>
+      <li><strong>AI 차별화 공간이 이미 닫혀 있다.</strong> 팀 기획 3축이 각각 실서비스다 — 경마선생(구독 운영)<sup class="cite"><a href="#src-16">[16]</a></sup>, 코리아레이스 마패<sup class="cite"><a href="#src-17">[17]</a></sup>, 그리고 <strong>13일 전 마사회 공모전 수상작 말고리즘</strong><sup class="cite"><a href="#src-18">[18]</a></sup>. 학계도 KRA 데이터 LTR 논문이 2편, 그중 하나는 <strong>웹서비스까지</strong> 만들었다<sup class="cite"><a href="#src-12">[12]</a><a href="#src-13">[13]</a></sup>.</li>
+      <li><strong>9일 전, 방심위가 폴리마켓을 국내에서 차단했다</strong><sup class="cite"><a href="#src-14">[14]</a><a href="#src-15">[15]</a></sup>. 논거는 “외피는 예측, 실질은 도박”이며 <strong>“분산화 기술 특성으로 국내법 적용을 회피할 수 없다”</strong>고 못박았다. SSAFY 명세서가 레퍼런스로 든 바로 그 서비스다.</li>
+    </ol>
+
+    <p class="pull">경마는 “불법이라서” 탈락하는 게 아니라 “블록체인이 필요 없어서” 탈락한다.</p>
+
+    <p style="margin-top:24px">반면 8/21의 배제 사유였던 “사행성 정면”은 정확한 진단이 아니었다. 마사회법 제48조 1항 2호도, 게임산업법 사행성게임물 정의도 <strong>“재물 또는 재산상의 이익”을 공통 요건</strong>으로 한다<sup class="cite"><a href="#src-6">[6]</a><a href="#src-8">[8]</a></sup>. 무엇보다 <strong>한국마사회 자신이 “경마 예상정보 제공 자체는 불법요소가 없다”고 공식 확인</strong>했다<sup class="cite"><a href="#src-11">[11]</a></sup>.</p>
+
+    <p><strong>단, 경마에는 애널리스트안이 못 가진 결정적 강점이 하나 있다 — 사이클 속도.</strong> 주당 약 50경주가 열리고 결과가 당일 확정된다. 애널리스트안의 최대 약점이 정확히 그것이었다(목표주가 6~12개월 → 7주에 사이클이 안 돎). <strong>두 주제의 강점은 정확히 상보적이다</strong> — 권고 <a href="#recs">R2</a>.</p>
+
+    <div class="note warn" style="margin-top:24px">
+      <span class="nh">가장 큰 미해소 항목 <span class="badge b-unver">미확인</span></span>
+      <p>경주 종료 → API 반영 지연시간. 3라운드를 파도 공개 문서에 없다<sup class="cite"><a href="#src-5">[5]</a></sup>. <strong>data.go.kr 인증키 발급 후 경마 시행일 실측만이 유일한 경로다.</strong></p>
+    </div>
+  </div>
+
+  <!-- ══════════ A ══════════ -->
+  <section id="a">
+    <h2><span class="kicker">차원 A</span>데이터 실사용성</h2>
+
+    <h3>API는 실존하고, 기대보다 좋다 <span class="badge b-ok">확인</span></h3>
+    <p>한국마사회는 공공데이터포털에 경마 오픈 API 수십 종을 제공한다 — 출마표·성적·구간기록·레이팅·혈통·훈련기록·기수/조교사 전적·확정배당률·매출까지<sup class="cite"><a href="#src-2">[2]</a></sup>. <code>경주별상세성적표</code>(15089492)의 엔드포인트는 <code>https://apis.data.go.kr/B551015/racedetailresult/getracedetailresult</code>이며 <strong>부담중량·마체중·마체중증감·단승/연승 배당률·레이팅</strong>을 모두 포함한다<sup class="cite"><a href="#src-1">[1]</a></sup>.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>기획서가 [미확인]으로 남긴 항목</th><th>확인 결과</th><th class="num">출처</th></tr></thead>
+      <tbody>
+        <tr><td>이용허락범위</td><td><strong>“제한 없음”</strong>, 비용 무료</td><td class="num">[1][5]</td></tr>
+        <tr><td>활용승인</td><td>개발단계 <strong>자동승인</strong> / 운영단계 심의승인</td><td class="num">[1][3][4]</td></tr>
+        <tr><td>트래픽</td><td><strong>개발계정 3,000건/일</strong>, 운영계정은 활용사례 등록 시 증액</td><td class="num">[3][4][5]</td></tr>
+        <tr><td>유지보수</td><td>등록 2021-09-23, <strong>수정 2026-08-16</strong> (11일 전)</td><td class="num">[1]</td></tr>
+        <tr><td>포맷</td><td><strong>JSON + XML</strong> 동시 제공, REST</td><td class="num">[4]</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="note">
+      <span class="nh">백필 산술</span>
+      <p><strong>실측으로 갱신<sup class="cite"><a href="#src-27">[27]</a></sup>:</strong> <code>rc_month</code> 단위로 긁으면 27년치(2000~2026) 전량이 <strong><span class="mono">972</span>콜</strong>이다. 개발계정 <span class="mono">3,000</span>콜/일 → <strong>1계정으로 하루 안에 끝난다. 다계정 분산 불필요.</strong> 실제 규모는 <strong><span class="mono">697,876</span>행</strong>으로 기획서의 “5년 ≈ 13만 행” 추정보다 5배 이상 크다.</p>
+    </div>
+
+    <h3>AI학습용 전용 데이터셋이 신설되어 있다</h3>
+    <p><code>AI학습용_경주결과</code>(15143803)는 2025-06-05 등록, <strong>2026-08-07 수정</strong>된 신규 데이터셋이다. 경마장 코드가 <code>1=서울, 2=제주, 3=부산경남, 4=영천</code>으로, 기획서가 [추정]으로 적었던 <strong>2026년 영천 경마장 개장이 API 파라미터로 확인</strong>됐다<sup class="cite"><a href="#src-4">[4]</a></sup>. 배경도 확인된다 — 마사회는 “정부의 AI 및 공공데이터 활용 활성화 정책에 맞춰” 말산업 데이터를 발굴·개방 중이다<sup class="cite"><a href="#src-18">[18]</a></sup>.</p>
+
+    <h3>날씨와 주로상태 — 이 절의 초판 서술은 실호출로 뒤집혔다 <span class="badge b-danger">번복</span></h3>
+    <div class="note bad">
+      <span class="nh">정정 · 초판의 오판</span>
+      <p>초판은 “KRA API에 날씨·주로상태가 없어 기상청 조인이 필요하다”고 적었다. <strong>틀렸다.</strong> 팀이 신청한 <code>경주기록 정보</code>(15058305 / <code>API4_3/raceResult_3</code>)의 실응답에 <strong><code>weather</code>와 <code>track</code>이 둘 다, 충전율 100%로 존재</strong>한다<sup class="cite"><a href="#src-27">[27]</a></sup>.</p>
+      <p style="margin-top:10px"><code>"weather": "맑음", "track": "포화 (16%)", "wgHr": "465(+9)", "wgBudam": 54.5</code></p>
+      <p style="margin-top:10px">초판이 근거로 삼은 것은 <code>경주별상세성적표</code>와 <code>AI학습용_경주결과</code>의 <strong>공개 페이지 필드 목록</strong>이었고, 그 두 API에 없다는 것은 지금도 사실이다<sup class="cite"><a href="#src-1">[1]</a><a href="#src-4">[4]</a></sup>. 오류는 <strong>거기서 “KRA API 전체에 없다”로 일반화</strong>한 데 있었다.</p>
+    </div>
+    <ul>
+      <li><code>weather</code> 분포(2026-05, 2,580행): 맑음 2,083 · 흐림 383 · 비 104 · 안개 10</li>
+      <li><code>track</code>은 <code>"양호 (7%)"</code> 형식이라 <strong>범주와 함수율 연속값을 동시에</strong> 뽑을 수 있다: 건조 1,350 · 양호 582 · 다습 578 · 불량 70</li>
+    </ul>
+    <p>→ <strong>기상청 조인은 불필요하다.</strong> 기획서 Q3 표의 “환경: 날씨, 주로 함수율/상태” 행은 옳았다.</p>
+
+    <h3>실시간성 — 유일하게 해소되지 않은 항목 <span class="badge b-unver">미확인</span></h3>
+    <p><code>경마시행당일_경주결과종합</code>(15119524)은 주로상태·등급·착순과 함께 <strong>실제/예정 발주시각, 취소여부, 확정여부, 구간 통과순위</strong>를 제공하고, <strong>요청 파라미터에 <code>final_bit</code>(확정여부)가 있다</strong><sup class="cite"><a href="#src-5">[5]</a></sup>. 확정 전/후를 구분해 조회하도록 설계됐다는 뜻이므로 경주 직후 미확정 데이터 접근 가능성을 시사한다.</p>
+    <p><strong>그러나 갱신주기와 실제 반영 시점은 3개 데이터셋 페이지 어디에도 기재되어 있지 않다</strong><sup class="cite"><a href="#src-1">[1]</a><a href="#src-4">[4]</a><a href="#src-5">[5]</a></sup>. 3라운드를 팠고, 공개 문서로는 확인 불가라는 것이 결론이다.</p>
+    <div class="note warn">
+      <span class="nh">실호출로 부분 확인 <span class="badge b-unver">분 단위 여전히 미확인</span></span>
+      <p>전일(2026-08-26 수) 경주 데이터는 익일 완전히 조회된다 — 서울 103 · 제주 67 · 부경 103행<sup class="cite"><a href="#src-27">[27]</a></sup>. 즉 <strong>지연 상한은 약 1일</strong>. 그러나 “경주 종료 후 몇 분인가”는 검증일(8/27 목)에 경주가 없어 측정 불가였다. <code>probe_latency.py</code>를 경마 시행일에 실행하면 닫힌다.</p>
+    </div>
+  </section>
+
+  <!-- ══════════ B ══════════ -->
+  <section id="b">
+    <h2><span class="kicker">차원 B</span>법률·사행성 — 8/21 배제 사유의 재심</h2>
+
+    <h3>조문 원문 — 공통 요건은 “재산상의 이익”</h3>
+    <p><strong>한국마사회법 제48조(유사행위의 금지 등)</strong><sup class="cite"><a href="#src-6">[6]</a></sup></p>
+    <div class="tw"><table>
+      <thead><tr><th class="num">항</th><th>대상</th><th>금지 내용</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1항 1호</td><td>마사회가 아닌 자</td><td>경마를 시행하는 행위</td></tr>
+        <tr><td class="num">1항 2호</td><td>마사회가 아닌 자</td><td>마사회 경주에 관하여 승마투표와 비슷한 행위를 하게 하여 <strong>적중자에게 재물 또는 재산상의 이익을 지급하는 행위</strong></td></tr>
+        <tr><td class="num">2항 2호</td><td>누구든지</td><td>영리 목적 마권 구매 대행·알선·양도</td></tr>
+        <tr><td class="num">3항 1호</td><td><strong>누구든지</strong></td><td><strong>배당률, 경주화면·음성, 컴퓨터 프로그램 등을 복제·개작·전송하는 행위</strong></td></tr>
+        <tr><td class="num">3항 2호</td><td>누구든지</td><td>정보통신망 이용 마권 시스템 설계·제작·유통·공중이용 제공</td></tr>
+      </tbody>
+    </table></div>
+    <p>위반 시 <strong>제50조 제1항: 7년 이하 징역 또는 7천만원 이하 벌금</strong>(미수범 처벌, 병과 가능)<sup class="cite"><a href="#src-7">[7]</a></sup>. 단속 실무에서도 사설마권 구매자 5년 이하/5천만원 이하, 홍보자 3년 이하/3천만원 이하가 적용된다<sup class="cite"><a href="#src-21">[21]</a></sup>.</p>
+
+    <div class="note">
+      <span class="nh">게임산업법 제2조 제1의2호 — 구성요건이 결합형이다</span>
+      <p>“사행성게임물”이라 함은 다음 각 목에 해당하는 게임물<strong>로서, 그 결과에 따라 재산상 이익 또는 손실을 주는 것</strong>을 말한다 — 가. 베팅·배당 / 나. 우연적 결과 / <strong>다. 「한국마사회법」에서 규율하는 경마와 이를 모사한 게임물</strong> / 라. 경륜·경정 모사 / 마. 카지노 모사<sup class="cite"><a href="#src-8">[8]</a></sup></p>
+      <p style="margin-top:10px">→ (i) 가~바 중 하나 <strong>AND</strong> (ii) 재산상 이익/손실. <strong>“경마 모사”만으로는 사행성게임물이 되지 않는다.</strong></p>
+    </div>
+
+    <h3>예측·분석 제공은 적법하다 <span class="badge b-ok">실증 3건</span></h3>
+    <ul>
+      <li><strong>한국마사회 공식 입장(2025-10-26): “리딩방의 경마 예상정보 제공 자체로는 불법요소가 없으며, 사설경마 등 마사회법 위반 행위가 있을 경우만 단속대상”</strong><sup class="cite"><a href="#src-11">[11]</a></sup></li>
+      <li>경마 예상 앱이 App Store·Google Play에 정상 유통 중<sup class="cite"><a href="#src-16">[16]</a><a href="#src-22">[22]</a></sup></li>
+      <li><strong>마사회가 직접 AI 경마 공모전을 열어 상을 주고 데이터 개방을 확대한다</strong><sup class="cite"><a href="#src-18">[18]</a></sup></li>
+    </ul>
+    <p>→ <strong>8/21의 “사행성 정면” 판정은 과한 진단이었다.</strong> AI 예측·분석 플랫폼은 명백히 적법 영역이다.</p>
+
+    <h3>그러나 세 가지 실제 위험이 있다</h3>
+    <div class="note bad">
+      <span class="nh">위험 1 — 제48조 3항 1호가 실시간 기획을 직격한다</span>
+      <p>“<strong>배당률</strong>, <strong>경주화면·음성</strong>, 컴퓨터 프로그램 등을 복제·개작·전송”을 <strong>누구든지</strong> 금지한다<sup class="cite"><a href="#src-6">[6]</a></sup>. 기획서의 “주말에는 실시간으로 맞추기”가 <strong>경주 중계 화면을 서비스에 띄우는 것을 의미한다면 정면 위반</strong>이다. 마사회가 공공데이터로 개방한 배당률을 약관대로 쓰는 것은 방어 가능해 보이나, <strong>명시적 유권해석은 확인하지 못했다.</strong></p>
+    </div>
+    <div class="note warn">
+      <span class="nh">위험 2 — 베팅이 들어가는 순간 등급분류가 꼬인다</span>
+      <p>게임물관리위원회: “<strong>경주 대상에 대한 베팅 행위 및 배당을 받는지의 여부</strong>, 경마 모사 해당 여부 등이 종합적으로 검토되어야 등급분류 가능 여부 및 연령등급이 결정된다”<sup class="cite"><a href="#src-9">[9]</a></sup>. 게임위는 “베팅이 없다면 청소년이용불가 가능성은 낮다”고 했으나, 역으로 <strong>유료 게임머니든 무료 게임아이템이든 베팅하는 게임은 청소년이용불가</strong>다<sup class="cite"><a href="#src-9">[9]</a></sup>. 그리고 제21조의 <strong>비영리 게임물 등급분류 예외는 “청소년이용불가 등급 내용 포함 시 제외”</strong>된다<sup class="cite"><a href="#src-10">[10]</a></sup>.</p>
+      <p style="margin-top:10px">→ 폐쇄 교육 프로젝트로 두는 한 등급분류 의무가 발생하지 않을 여지가 크지만, <strong>팀이 명시한 “빠른 론칭 → 유저 테스트 → 피드백”과 정면 충돌한다.</strong></p>
+    </div>
+    <div class="note bad">
+      <span class="nh">위험 3 — 폴리마켓 차단, 9일 전</span>
+      <p>2026-08-18 방심위가 접속차단을 의결했다<sup class="cite"><a href="#src-14">[14]</a><a href="#src-15">[15]</a></sup>. 형법상 도박·도박장소 개설 방조 정보 및 <strong>국민체육진흥법상 유사행위</strong> 해당, “승자독식 손익구조 + 우연성 의존”이 논거다. 방심위는 <strong>“한국어 서비스 제공 여부나 분산화 기술 특성으로 국내법 적용을 회피할 수 없다”</strong>고 명시했다<sup class="cite"><a href="#src-14">[14]</a></sup>. 국민체육진흥법 제26조도 동일하게 “적중자에게 재물이나 재산상의 이익을 제공”을 요건으로 한다(제53조: 3년 이하/1,500만원 이하)<sup class="cite"><a href="#src-20">[20]</a></sup>.</p>
+    </div>
+
+    <h3>설계별 법적 지위 판정</h3>
+    <div class="tw"><table class="sev">
+      <thead><tr><th>설계</th><th>법적 지위</th><th class="num">근거</th></tr></thead>
+      <tbody>
+        <tr class="s-ok"><td>AI 예측·분석 정보만 제공</td><td><span class="badge b-ok">적법</span></td><td class="num">[11][16][18]</td></tr>
+        <tr class="s-ok"><td>비환금 포인트 참여, 배당 없이 정확도 순위만</td><td><span class="badge b-med">방어 가능</span></td><td class="num">[6][8]</td></tr>
+        <tr class="s-warn"><td>비환금 토큰 베팅 + 패리뮤추얼 배당 정산</td><td><span class="badge b-low">회색지대</span></td><td class="num">[9][10]</td></tr>
+        <tr class="s-bad"><td>토큰에 환금성·경품 부여</td><td><span class="badge b-danger">7년 이하 징역</span></td><td class="num">[6][7]</td></tr>
+        <tr class="s-bad"><td>경주화면·음성 또는 배당률 재전송</td><td><span class="badge b-danger">정면 위반</span></td><td class="num">[6]</td></tr>
+      </tbody>
+    </table></div>
+    <p>SSAFY 명세는 <strong>Besu 프라이빗 체인 + 비환금 ERC-20 + 기수/지역/반 한정 참여</strong>를 강제하므로(명세서 pp.6-8), 명세를 그대로 따르는 한 위 표의 3행에 머문다. <strong>4·5행으로 넘어가지 않는 것이 절대 조건이다.</strong></p>
+  </section>
+
+  <!-- ══════════ C ══════════ -->
+  <section id="c">
+    <h2><span class="kicker">차원 C</span>모델 성립성</h2>
+
+    <h3>접근법은 국내 데이터로 2회 독립 검증됐다 <span class="badge b-ok">확인</span></h3>
+    <p>기획서가 지목한 KCI 논문은 실존한다 — <em>“Machine Learning-based Learning-to-Rank Approach for Horse Race Prediction and Web Service Development”</em>, So·Woo·Lee, 한국컴퓨터정보학회논문지 30(11):311-318, <strong>2025-11-28</strong><sup class="cite"><a href="#src-12">[12]</a></sup>. KRA 2024.5~2025.4, <strong>9,140 경주</strong>로 LightGBM/XGBoost/CatBoost + Listwise LambdaRank 비교.</p>
+    <p><strong>기획서가 몰랐던 두 번째 논문도 있다</strong> — <em>“Horse race rank prediction using learning-to-rank approaches”</em>, 응용통계연구<sup class="cite"><a href="#src-13">[13]</a></sup>. 서울 경마 대상, pair-wise가 point-wise보다 우수, CatBoost Ranker 최고.</p>
+    <p>→ <strong>“경주 단위 상대비교 LTR”이라는 프레이밍은 방법론 리스크가 사실상 없다.</strong> 기획서의 Q2·Q4 답변(말마다 모델을 만들지 않는다 / 클러스터링도 아니다 / 단일 모델이 경주 내에서 비교한다)은 옳다. 데이터량도 교차 검증된다 — 공개 프로젝트가 서울 3년치로 <span class="mono">26,828</span>행을 확보했다<sup class="cite"><a href="#src-23">[23]</a></sup>.</p>
+
+    <h3>기획서 정정 — 인용에서 빠진 반전 <span class="badge b-danger">오류</span></h3>
+    <div class="note bad">
+      <span class="nh">정정 2 / 3</span>
+      <p>기획서는 “CatBoost NDCG 0.8895”만 인용했다. <strong>논문의 실제 결론은 한 겹 더 있다: CatBoost가 랭킹 품질은 최고(NDCG <span class="mono">0.8895</span>, MAP <span class="mono">0.4204</span>)였으나, 실제 베팅 시나리오에서는 LightGBM과 XGBoost가 더 높은 예측 정확도를 보였다</strong><sup class="cite"><a href="#src-12">[12]</a></sup>.</p>
+      <p style="margin-top:10px">→ <strong>랭킹 지표 최적화 ≠ 베팅 성과 최적화.</strong> 발표에서 “NDCG를 올렸다”가 아니라 “적중률/기대값을 올렸다”로 평가축을 잡아야 하며, 두 지표가 갈라진다는 사실 자체가 좋은 발표 소재다.</p>
+    </div>
+
+    <h3>그러나 차별화 압박이 크다</h3>
+    <p>논문이 쓴 피처는 <strong>최근 경주 성적, 통산 평균 착순, 부담중량, 마령 — 4개 계열뿐</strong>이다. 그것만으로 NDCG 0.8895를 냈고, 거기에 더해 <strong>“순위 결과를 시각화하고 초보 사용자도 직관적으로 의사결정할 수 있는 웹 기반 예측 시스템”까지 개발했다</strong><sup class="cite"><a href="#src-12">[12]</a></sup>.</p>
+    <p>즉 <strong>“AI로 경마 예측하는 웹서비스”는 9개월 전에 논문으로 나왔다. 재현은 기여가 아니다.</strong> 차별화가 나올 자리는 좁게 남는다 — 피처 엔지니어링 깊이(구간기록·혈통·기수-마 콤비·거리 적성), 확률 보정(softmax + Platt/isotonic), <strong>배당률 포함/제외 2모델 비교</strong>, 기대값 기반 백테스트 ROI, 시간순 분할의 엄격한 준수.</p>
+  </section>
+
+  <!-- ══════════ D ══════════ -->
+  <section id="d">
+    <h2><span class="kicker">차원 D</span>시장·경쟁·차별화</h2>
+
+    <h3>직접 경쟁자 3곳이 전부 실서비스다 <span class="badge b-ok">확인</span></h3>
+    <div class="tw"><table>
+      <thead><tr><th>서비스</th><th>무엇</th><th>겹치는 축</th></tr></thead>
+      <tbody>
+        <tr><td><strong>경마선생</strong><br><span class="mono" style="font-size:11px; color:var(--muted)">kr.co.publicdata.horse</span></td><td><strong>공공데이터 기반</strong> AI가 경주기록 분석해 결과 예측. 전 경마장 지원. <strong>프리미엄 구독 운영</strong><sup class="cite"><a href="#src-16">[16]</a></sup></td><td>① AI 예측</td></tr>
+        <tr><td><strong>코리아레이스 마패</strong><br><span class="mono" style="font-size:11px; color:var(--muted)">MapAI</span></td><td>AI 예상 참고 + <strong>사용자가 직접 예상을 만드는</strong> 툴<sup class="cite"><a href="#src-17">[17]</a></sup></td><td>② 나만의 커스텀 모델</td></tr>
+        <tr><td><strong>말고리즘</strong><br><span class="mono" style="font-size:11px; color:var(--muted)">Horse IT 개발</span></td><td>공공데이터 AI 앱. 메모·복기노트를 AI가 분석해 개인화. <strong>2026-08-14 마사회 공모전 수상</strong><sup class="cite"><a href="#src-18">[18]</a></sup></td><td>③ 개인화</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>팀 기획의 AI 3축이 각각 이미 상용 서비스로 존재한다.</strong> 특히 말고리즘 수상은 <strong>13일 전</strong> 사건이다. 패키지명 <code>kr.co.publicdata.horse</code>가 말해주듯 경마선생은 정확히 같은 공공데이터 소스를 쓴다.</p>
+
+    <h3>마사회 공모전 — 기회이면서 동시에 닫힌 문</h3>
+    <p><strong>제11회 대한마사회 창의·혁신 아이디어 공모전 + AI 활용 창의혁신공모전</strong>은 <span class="mono">298</span>개 아이디어가 접수돼 금상 3·은상 3·동상 12 등 <span class="mono">18</span>개를 선정, <strong>2026-08-14 결과가 발표됐다</strong>. 마사회는 “향후 AI 관련 경마 데이터 개방 활성화 방안을 수립하고, 우수 아이디어에 대한 사업화 지원과 데이터 구축 지원을 추진하겠다”고 밝혔다<sup class="cite"><a href="#src-18">[18]</a></sup>.</p>
+    <div class="note warn">
+      <span class="nh">수상 80%가 목표인 팀에게</span>
+      <p>매력적인 트랙이지만 <strong>이번 회차는 이미 끝났다.</strong> 공공데이터포털의 2026년 공공데이터 활용 경진대회 목록에도 마사회 주관 대회는 확인되지 않는다<sup class="cite"><a href="#src-24">[24]</a></sup>. <strong>7주 프로젝트 기간 내 출품 가능한 마사회 공모전은 없다고 봐야 한다.</strong></p>
+    </div>
+
+    <h3>시장은 축소 중이고, 도달 가능한 모수는 작다</h3>
+    <ul>
+      <li>합법경마 매출액 2008년 <span class="mono">7.4조</span>원 → 2024년 <span class="mono">6.5조</span>원 <span class="badge b-low">신뢰도 낮음</span><sup class="cite"><a href="#src-26">[26]</a></sup></li>
+      <li>온라인 마권은 2024-06 정식발매, <strong>발매 총량이 경마 총매출의 10%로 제한</strong>됨<sup class="cite"><a href="#src-19">[19]</a><a href="#src-25">[25]</a></sup></li>
+      <li>온라인 플랫폼 ‘더비온’ 누적 등록자 <strong><span class="mono">91,943</span>명</strong>(2025-02말), 이용자 약 <strong>90%가 1만원 이하 소액</strong><sup class="cite"><a href="#src-19">[19]</a></sup></li>
+    </ul>
+    <p>다만 이 프로젝트에서 “시장”의 의미는 제한적이다. SSAFY 명세는 참여 대상을 <strong>기수·지역·반 조건으로 한정</strong>하고 비환금 토큰을 강제한다. 상업적 TAM은 애초에 접근 대상이 아니며, 실질 평가축은 <strong>(a) 심사에서의 차별성</strong>과 <strong>(b) 면접에서의 서사</strong>다. 그 두 축에서 위 경쟁 지형이 그대로 리스크가 된다.</p>
+  </section>
+
+  <!-- ══════════ CROSS ══════════ -->
+  <section id="cross">
+    <h2><span class="kicker">05</span>교차 차원 인사이트</h2>
+
+    <h3>1. 데이터가 좋을수록 블록체인 당위성이 약해진다</h3>
+    <p>차원 A는 “마사회가 결과를 공신력 있게, 무료로, 제한 없이, 빠르게 확정 발표한다”를 확인했다. <strong>바로 그 사실이 차원 B·D에서 독이 된다.</strong> 팀의 블록체인 조건 2가 성립할 수 없다 — 거짓말할 검증자가 없기 때문이다. 심사위원이 “왜 블록체인인가”를 물었을 때 답이 조건 1·3(에스크로 + 자동정산)으로 축소되는데, <strong>그 둘은 8/21 트리아지에서 “예측 플랫폼 아님(에스크로·이력관리)” 사유로 7건을 배제할 때 쓴 바로 그 기준이다.</strong></p>
+
+    <h3>2. 법률 리스크의 실체는 “사행성”이 아니라 “제48조 3항 1호”였다</h3>
+    <p>8/21 트리아지는 경마를 “사행성 정면”으로 배제했다. 조문을 읽으면 그 진단은 과했다. 그런데 아무도 보지 못한 조항이 하나 있었다 — <strong>배당률·경주화면·음성의 복제·전송 금지</strong><sup class="cite"><a href="#src-6">[6]</a></sup>. 이것이 기획의 “주말 실시간” 축을 직접 겨눈다. <strong>틀린 이유로 배제했다가, 맞는 이유를 놓친 셈이다.</strong></p>
+
+    <h3>3. 경마의 진짜 강점은 AI가 아니라 사이클 속도다</h3>
+    <p>차원 C·D는 AI 차별화 공간이 좁다는 것을 보여준다. 그러나 차원 A는 <strong>주당 약 50경주, 당일 결과 확정</strong>을 확인했다. 8/21 확정안의 문서화된 최대 약점이 정확히 이것이었다 — “목표주가 투자기간 6~12개월 → 7주 안에 사이클이 안 돈다”. <strong>두 주제의 강점과 약점이 정확히 반대로 맞물린다.</strong></p>
+
+    <figure>
+      <svg viewBox="0 0 720 268" role="img" aria-label="경마와 애널리스트 리포트 검증 주제를 4개 축으로 비교한 막대 차트. 블록체인 당위성은 경마 2 대 애널리스트 5, 7주 내 정산 사이클은 경마 5 대 애널리스트 1, 데이터 접근성과 라이선스는 경마 5 대 애널리스트 2, AI 차별화 여지는 경마 2 대 애널리스트 4.">
+        <g font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor">
+          <text x="16" y="20" font-size="10" opacity=".62" letter-spacing="1.2">강점 상보성 · 1(낮음) ~ 5(높음)</text>
+          <g opacity=".62">
+            <rect x="420" y="10" width="9" height="9" fill="var(--accent)"></rect><text x="435" y="18.5">경마</text>
+            <rect x="500" y="10" width="9" height="9" fill="var(--muted)"></rect><text x="515" y="18.5">애널리스트 리포트 검증</text>
+          </g>
+        </g>
+        <g font-family="Noto Sans KR, sans-serif" font-size="12.5" fill="currentColor">
+          <!-- gridlines -->
+          <g stroke="currentColor" opacity=".13">
+            <line x1="238" y1="42" x2="238" y2="256"></line>
+            <line x1="334" y1="42" x2="334" y2="256"></line>
+            <line x1="430" y1="42" x2="430" y2="256"></line>
+            <line x1="526" y1="42" x2="526" y2="256"></line>
+            <line x1="622" y1="42" x2="622" y2="256"></line>
+            <line x1="718" y1="42" x2="718" y2="256"></line>
+          </g>
+
+          <!-- row 1: 블록체인 당위성 -->
+          <text x="16" y="62">블록체인 당위성</text>
+          <rect x="238" y="52" width="192" height="13" rx="1.5" fill="var(--accent)"></rect>
+          <rect x="238" y="68" width="480" height="13" rx="1.5" fill="var(--muted)" opacity=".55"></rect>
+
+          <!-- row 2: 사이클 -->
+          <text x="16" y="118">7주 내 정산 사이클</text>
+          <rect x="238" y="108" width="480" height="13" rx="1.5" fill="var(--accent)"></rect>
+          <rect x="238" y="124" width="96" height="13" rx="1.5" fill="var(--muted)" opacity=".55"></rect>
+
+          <!-- row 3: 데이터 -->
+          <text x="16" y="174">데이터 접근성·라이선스</text>
+          <rect x="238" y="164" width="480" height="13" rx="1.5" fill="var(--accent)"></rect>
+          <rect x="238" y="180" width="192" height="13" rx="1.5" fill="var(--muted)" opacity=".55"></rect>
+
+          <!-- row 4: 차별화 -->
+          <text x="16" y="230">AI 차별화 여지</text>
+          <rect x="238" y="220" width="192" height="13" rx="1.5" fill="var(--accent)"></rect>
+          <rect x="238" y="236" width="384" height="13" rx="1.5" fill="var(--muted)" opacity=".55"></rect>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".5" text-anchor="middle">
+          <text x="238" y="266">0</text><text x="334" y="266">1</text><text x="430" y="266">2</text>
+          <text x="526" y="266">3</text><text x="622" y="266">4</text><text x="718" y="266">5</text>
+        </g>
+      </svg>
+      <figcaption><strong>축별 상대 평가.</strong> 각 축 점수는 §A~§D의 확인된 근거에 대한 저자 판단이며 측정치가 아니다 — “블록체인 당위성”은 §5-1, “사이클”은 §5-3, “데이터”는 §A, “차별화”는 §C·§D에서 도출. 두 막대가 매 축마다 반대로 뒤집히는 것이 R2의 근거다.</figcaption>
+    </figure>
+
+    <h3>4. 폴리마켓 차단은 위협이자 서사다</h3>
+    <p>명세서가 레퍼런스로 든 서비스가 9일 전 국내에서 차단됐다. “블록체인 예측 = 도박” 프레임이 지금 가장 강한 시점이라는 뜻이다. 동시에 <strong>“폴리마켓이 차단된 이유를 조문 단위로 분석하고 그것을 통과하도록 설계했다”</strong>는 것은 어떤 주제를 고르든 발표에서 강력한 한 장이 된다.</p>
+  </section>
+
+  <!-- ══════════ CONTRA ══════════ -->
+  <section id="contra">
+    <h2><span class="kicker">06</span>반대 근거 — 경마를 지지하는 가장 강한 논거</h2>
+    <p>공정하게, 경마 채택을 지지하는 근거도 실재한다:</p>
+    <ul>
+      <li><strong>데이터 품질·비용·라이선스가 이 프로젝트에서 만날 수 있는 최상급이다.</strong> 무료, 이용허락범위 제한 없음, 자동승인, JSON, AI 학습용 전용 데이터셋 신설, 3주 내 갱신<sup class="cite"><a href="#src-1">[1]</a><a href="#src-4">[4]</a><a href="#src-5">[5]</a></sup>. 대조적으로 애널리스트안의 소스는 <strong>네이버 금융 크롤링 — 공식 API가 아니며 저작권 가드레일이 필요</strong>하다.</li>
+      <li><strong>결과 확정이 100% 자동·객관적이다.</strong> 오라클 구현 난도가 가장 낮고, 7주 안에 정산 사이클을 수백 번 돌릴 수 있다.</li>
+      <li><strong>마사회가 이 영역을 장려한다</strong> — 공모전 개최, AI 데이터 개방 확대 방침<sup class="cite"><a href="#src-18">[18]</a></sup>.</li>
+      <li><strong>AI 정량 성과를 낼 수 있다.</strong> 배당률 내재확률이라는 시장 베이스라인이 있어 “시장 대비 +Xp”라는 검증 가능한 지표가 나온다 — 애널리스트안에는 없는 강점이다.</li>
+    </ul>
+    <div class="note">
+      <span class="nh">이 논거들의 공통 한계</span>
+      <p>전부 <strong>“좋은 데이터 프로젝트”의 근거이지 “블록체인이 필요한 프로젝트”의 근거가 아니다.</strong> 그리고 이것은 블록체인 프로젝트다.</p>
+    </div>
+  </section>
+
+  <!-- ══════════ RECS ══════════ -->
+  <section id="recs">
+    <h2><span class="kicker">07</span>권고</h2>
+
+    <div class="rec">
+      <div class="rec-head"><span class="rec-id">R1</span><h3>경마를 프로젝트의 본체 주제로 삼지 말 것</h3><span class="badge b-ok">신뢰도 높음</span></div>
+      <p>근거는 §5-1 — 팀 자신의 블록체인 3조건 중 조건 2가 구조적으로 성립하지 않는다. 보조 근거는 §D의 경쟁 포화와 §B의 규제 인상 리스크. <strong>다만 8/21 트리아지의 배제 사유는 “사행성 정면”이 아니라 “블록체인 당위성 결여”로 정정할 것</strong> — 사유가 틀리면 유사 주제를 판단할 때 같은 실수가 반복된다.</p>
+      <p class="feeds"><b>소비처</b> — 브레인스토밍 트리아지 사유 정정 · 제품 브리프의 “배제된 대안” 절</p>
+    </div>
+
+    <div class="rec">
+      <div class="rec-head"><span class="rec-id">R2</span><h3>8/21 확정안을 유지하되, 경마를 “빠른 사이클 이벤트 카테고리”로 편입할 것</h3><span class="badge b-med">신뢰도 중간</span></div>
+      <p>SSAFY 명세는 <code>PredictionEventFactory</code>가 <strong>이벤트별 <code>PredictionEvent</code>를 배포하는 구조</strong>이며 이벤트 생성 시 <strong>카테고리를 입력받는다</strong>(명세서 pp.6-7). 한 플랫폼에 복수 이벤트 카테고리를 담는 것이 명세 그 자체다.</p>
+      <ul>
+        <li><strong>애널리스트 축</strong> = 블록체인 당위성(틀린 전망의 은폐 방지) + 문제의식 + RAG 당위성</li>
+        <li><strong>경마 축</strong> = 7주 안에 수백 회 도는 정산 사이클 + AI 정량 성과(시장 배당률 대비) + 무료·무제한 데이터</li>
+      </ul>
+      <p>경마 축은 <strong>베팅이 아니라 “AI 예측을 온체인에 박제하고 채점한다”</strong>로 프레이밍한다. 그러면 조건 2가 필요 없는 축이라는 사실이 문제가 되지 않는다 — 조건 2는 애널리스트 축이 담당한다.</p>
+      <p class="feeds"><b>소비처</b> — 제품 브리프(범위) · PRD(이벤트 카테고리 정의) · 아키텍처(Factory 카테고리 모델)</p>
+    </div>
+
+    <div class="rec">
+      <div class="rec-head"><span class="rec-id">R3</span><h3>어떤 안을 고르든 아래 3개를 설계 불변식으로 못 박을 것</h3><span class="badge b-ok">조문 원문 근거</span></div>
+      <ol>
+        <li><strong>토큰에 어떠한 환금성·경품 교환도 부여하지 않는다</strong> — 위반 시 마사회법 제48조 1항 2호, 7년 이하 징역<sup class="cite"><a href="#src-6">[6]</a><a href="#src-7">[7]</a></sup></li>
+        <li><strong>경주 중계 화면·음성을 서비스에 전송하지 않는다. 배당률은 공공데이터 API로 취득한 확정치만 사용한다</strong> — 제48조 3항 1호<sup class="cite"><a href="#src-6">[6]</a></sup></li>
+        <li><strong>참여 대상을 SSAFY 기수/지역/반으로 한정한 폐쇄망을 유지한다</strong> — 명세 요구이자 등급분류 의무 회피의 근거<sup class="cite"><a href="#src-9">[9]</a><a href="#src-10">[10]</a></sup></li>
+      </ol>
+      <p class="feeds"><b>소비처</b> — 아키텍처 스파인의 불변식(invariants) · PRD 비기능 요구</p>
+    </div>
+
+    <div class="rec">
+      <div class="rec-head"><span class="rec-id">R4</span><h3>“빠른 론칭 → 유저 테스트” 도전 과제를 법률 제약과 함께 재정의할 것</h3><span class="badge b-med">신뢰도 중간</span></div>
+      <p>브레인스토밍의 도전 과제는 외부 유저 테스트를 전제하지만, §B 위험 2에 따르면 <strong>베팅 메커닉이 있는 채로 외부 공개하면 등급분류 이슈가 살아난다.</strong> 유저 테스트 모수를 SSAFY 내부로 한정하거나, 외부 공개 버전은 베팅을 제거한 조회 전용으로 분리하는 두 갈래 중 하나를 W1에 확정할 것.</p>
+      <p class="feeds"><b>소비처</b> — 제품 브리프(사용자 정의) · 스프린트 계획(W1 게이트)</p>
+    </div>
+
+    <div class="rec">
+      <div class="rec-head"><span class="rec-id">R5</span><h3>경마를 어떤 형태로든 쓴다면, W1에 API 키 실측 3항목을 게이트로 둘 것</h3><span class="badge b-ok">신뢰도 높음</span></div>
+      <p>아래 미해결 질문 1~3. 특히 <strong>반영 지연 실측 전에는 “주말 실시간” 기능을 커밋하지 말 것.</strong></p>
+      <p class="feeds"><b>소비처</b> — 스프린트 계획 W1 준비도 게이트</p>
+    </div>
+  </section>
+
+  <!-- ══════════ VERIFY ══════════ -->
+  <section id="verify">
+    <h2><span class="kicker">08</span>실호출 검증 <span style="font-family:var(--mono);font-size:12px;font-weight:400;color:var(--muted)">2026-08-27 · 인증키 발급 후</span></h2>
+    <p>팀이 data.go.kr 개발계정 인증키를 발급하고 7종을 승인받아 <strong>전부 실호출로 검증했다</strong><sup class="cite"><a href="#src-27">[27]</a></sup>. 전체 결과는 <code>data-inventory.md</code>에 있다. 결론에 영향을 주는 것만 옮긴다.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>실측값</th></tr></thead>
+      <tbody>
+        <tr><td>승인 7종 동작</td><td><span class="badge b-ok">7 / 7 정상</span> <span class="mono" style="font-size:11.5px;color:var(--muted)">resultCode=00</span></td></tr>
+        <tr><td>학습 원장</td><td><code>API4_3/raceResult_3</code> — <strong>필드 93개</strong></td></tr>
+        <tr><td>과거 커버리지</td><td><strong><span class="mono">2000</span>년~현재, <span class="mono">697,876</span>행</strong> (1998년 이전 0)</td></tr>
+        <tr><td>백필 비용</td><td><code>rc_month</code> 단위 <strong><span class="mono">972</span>콜</strong> = 1계정 하루</td></tr>
+        <tr><td>결측</td><td>weather·track·wgHr·wgBudam·ord·ilsu <strong>100%</strong> · 배당률 98% · <strong><code>rating</code> 76%</strong>(유일한 실질 결측)</td></tr>
+        <tr><td>반영 지연</td><td>상한 약 1일 확인 · <span class="badge b-unver">분 단위 미확인</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="note">
+      <span class="nh">차별화에 대한 함의</span>
+      <p>선행 KCI 논문이 쓴 데이터는 <strong><span class="mono">9,140</span>경주(1년치)</strong>다<sup class="cite"><a href="#src-12">[12]</a></sup>. 팀은 <strong>27년치를 쓸 수 있다</strong> — §C에서 지적한 차별화 부족에 대한 첫 번째 실질적 지렛대다.</p>
+    </div>
+
+    <h3>새로 드러난 위험 2건</h3>
+    <div class="note bad">
+      <span class="nh">위험 1 — 출마표가 없어 “경기 전 예측”이 성립하지 않는다</span>
+      <p>승인된 7종은 <strong>전부 경주 <em>결과</em> 계열</strong>이다. 발주 전 예측의 입력이 되는 <strong>출마표(<code>AI학습용_경주계획</code> 15143802 / <code>API154/racePlan</code>)가 신청 목록에 없다.</strong> 이것 없이는 예측 서비스 자체가 성립하지 않는다. 자동승인이므로 즉시 추가 신청할 것. 함께 검토: <code>경마시행당일_경주결과종합</code>(15119524) — <code>final_bit</code>가 지연 실측과 라이브 정산에 필요하다.</p>
+    </div>
+    <div class="note warn">
+      <span class="nh">위험 2 — 통산전적 API 3종은 그대로 쓰면 누수를 만든다</span>
+      <p><code>API15_2/raceHorseResult_2</code>(경주마 성적), <code>API77/raceHorseRating</code>(레이팅), <code>trtresult/gettrtresult</code>(조교사)는 모두 <strong>오늘 기준 누적 스냅샷</strong>이다. 과거 경주 행에 붙이면 모델이 미래를 안 채로 예측하게 된다. 통산·최근 성적류는 <strong><code>API4_3</code> 원장에서 경주일 이전 데이터만으로 직접 rolling 집계</strong>해야 한다. (<code>API4_3</code>의 <code>rating</code> 필드는 경주 시점 값이라 누수가 없다.)</p>
+    </div>
+
+    <h3>기획서 정정 — 평일에도 경주가 있다 <span class="badge b-danger">오류</span></h3>
+    <p>기획서는 “평일(월~목)에는 경주가 없다 → ‘평일 = 과거 경기 리플레이’ 기획이 데이터 현실과 정확히 부합한다”고 적었다. <strong>부분적으로 틀렸다.</strong> 기본 편성이 금·토·일인 것은 맞지만, 2026년 들어 월·화·수 예외 편성이 발생한다<sup class="cite"><a href="#src-27">[27]</a></sup>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>월</th><th class="num">경주일수</th><th>요일 분포</th></tr></thead>
+      <tbody>
+        <tr><td>2025-02 · 06 · 11</td><td class="num">10~14</td><td>금·토·일만</td></tr>
+        <tr><td>2026-03</td><td class="num">14</td><td><strong>월1</strong> + 금4 토4 일5</td></tr>
+        <tr><td>2026-07</td><td class="num">14</td><td><strong>월1 화1</strong> + 금4 토4 일4</td></tr>
+        <tr><td><strong>2026-08</strong></td><td class="num">16</td><td><strong>월2 화1 수1</strong> + 금4 토4 일4</td></tr>
+      </tbody>
+    </table></div>
+    <p>목요일만 0이다. <strong>“평일=리플레이”를 요일로 하드코딩하면 실경기와 충돌한다</strong> — 경주 유무를 API로 조회해 분기할 것.</p>
+  </section>
+
+  <!-- ══════════ OPEN ══════════ -->
+  <section id="open">
+    <h2><span class="kicker">09</span>미해결 질문</h2>
+    <div class="tw"><table>
+      <thead><tr><th class="num">#</th><th>질문</th><th>해소 방법</th><th>차단 여부</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>경주 종료 → API 반영 실제 지연시간 <span class="badge b-unver">미확인</span></td><td><strong>API 키 발급 후 경마 시행일(금·토·일) 하루 실측.</strong> <code>final_bit</code>로 확정 전/후 폴링</td><td><span class="badge b-danger">주말 실시간 차단</span></td></tr>
+        <tr><td class="num">2</td><td><s>과거 데이터 제공 범위</s></td><td><strong>해소 — 2000년~현재 697,876행</strong></td><td><span class="badge b-ok">해소</span></td></tr>
+        <tr><td class="num">3</td><td><s>응답 필드의 영문 키명·타입</s></td><td><strong>해소 — 93필드 전체 확보</strong></td><td><span class="badge b-ok">해소</span></td></tr>
+        <tr><td class="num">4</td><td>공공데이터 배당률 재전송이 제48조 3항 1호와 충돌하는지</td><td>마사회 또는 법제처 유권해석 조회</td><td><span class="badge b-med">비차단 · R3-2로 회피</span></td></tr>
+        <tr><td class="num">5</td><td><s>날씨 데이터 조인</s></td><td><strong>해소 — <code>weather</code>가 API 내장, 조인 불필요</strong></td><td><span class="badge b-ok">해소</span></td></tr>
+        <tr><td class="num">6</td><td>합법경마 매출 추이 수치(7.4조→6.5조)</td><td>마사회 연차보고서/통계연보 1차 출처</td><td><span class="badge b-med">비차단 · 현재 2차 출처만</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ══════════ SOURCES ══════════ -->
+  <section id="src">
+    <h2><span class="kicker">10</span>출처 부록</h2>
+    <details open>
+      <summary>27개 출처 — 발행처 · 발행일 · 접근일 · 신뢰도</summary>
+      <div class="tw" style="border:none; border-radius:0">
+      <table class="sources"><thead><tr><th>#</th><th>뒷받침하는 내용</th><th>발행처</th><th>발행일</th><th>접근일</th><th>신뢰도</th></tr></thead><tbody><tr id="src-1"><td>[1]</td><td>경주별상세성적표 엔드포인트·필드·라이선스·수정일</td><td><a href="https://www.data.go.kr/data/15089492/openapi.do" target="_blank" rel="noopener">공공데이터포털 15089492</a></td><td>수정 2026-08-16</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-2"><td>[2]</td><td>KRA 데이터셋 전체 목록</td><td><a href="https://www.data.go.kr/tcs/dss/selectDataSetList.do?dType=&amp;org=%ED%95%9C%EA%B5%AD%EB%A7%88%EC%82%AC%ED%9A%8C" target="_blank" rel="noopener">공공데이터포털 KRA 목록</a></td><td>n/a</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-3"><td>[3]</td><td>경마경주정보 트래픽(개발 3,000)·승인절차</td><td><a href="https://www.data.go.kr/data/15063951/openapi.do" target="_blank" rel="noopener">공공데이터포털 15063951</a></td><td>n/a</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-4"><td>[4]</td><td>AI학습용_경주결과 필드·영천 코드·날씨 부재·트래픽</td><td><a href="https://www.data.go.kr/data/15143803/openapi.do" target="_blank" rel="noopener">공공데이터포털 15143803</a></td><td>수정 2026-08-07</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-5"><td>[5]</td><td>경마시행당일_경주결과종합 주로상태·final_bit·갱신주기 미기재</td><td><a href="https://www.data.go.kr/data/15119524/openapi.do" target="_blank" rel="noopener">공공데이터포털 15119524</a></td><td>수정 2026-08-07</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-6"><td>[6]</td><td>한국마사회법 제48조 원문</td><td><a href="https://casenote.kr/%EB%B2%95%EB%A0%B9/%ED%95%9C%EA%B5%AD%EB%A7%88%EC%82%AC%ED%9A%8C%EB%B2%95/%EC%A0%9C48%EC%A1%B0" target="_blank" rel="noopener">CaseNote 마사회법 제48조</a></td><td>시행 2020-03-24</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-7"><td>[7]</td><td>한국마사회법 제50조 벌칙</td><td><a href="https://casenote.kr/%EB%B2%95%EB%A0%B9/%ED%95%9C%EA%B5%AD%EB%A7%88%EC%82%AC%ED%9A%8C%EB%B2%95/%EC%A0%9C50%EC%A1%B0" target="_blank" rel="noopener">CaseNote 마사회법 제50조</a></td><td>시행 2020-03-24</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-8"><td>[8]</td><td>게임산업법 제2조 사행성게임물 정의</td><td><a href="https://casenote.kr/%EB%B2%95%EB%A0%B9/%EA%B2%8C%EC%9E%84%EC%82%B0%EC%97%85%EC%A7%84%ED%9D%A5%EC%97%90_%EA%B4%80%ED%95%9C_%EB%B2%95%EB%A5%A0/%EC%A0%9C2%EC%A1%B0" target="_blank" rel="noopener">CaseNote 게임산업법 제2조</a></td><td>시행 2025-08-01</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-9"><td>[9]</td><td>게임위 경마 모사 판단 기준·베팅 시 청불</td><td><a href="https://www.gamemeca.com/view.php?gid=1655628" target="_blank" rel="noopener">게임메카</a></td><td>2021-02</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-10"><td>[10]</td><td>등급분류 예외(공익·비영리)와 청불 배제</td><td><a href="https://www.grac.or.kr/Institution/EtcForm01.aspx" target="_blank" rel="noopener">게임물관리위원회</a></td><td>n/a</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-11"><td>[11]</td><td>마사회 &quot;경마 예상정보 제공 자체는 불법요소 없음&quot;</td><td><a href="https://www.imaeil.com/page/view/2025102611143847571" target="_blank" rel="noopener">매일신문</a></td><td>2025-10-26</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-12"><td>[12]</td><td>KCI LTR 논문 서지·피처·성능·웹서비스</td><td><a href="https://journal.kci.go.kr/jksci/archive/articleView?artiId=ART003266151" target="_blank" rel="noopener">KCI ART003266151</a></td><td>2025-11-28</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-13"><td>[13]</td><td>응용통계연구 LTR 논문 (2번째 선행연구)</td><td><a href="https://koreascience.kr/article/JAKO202414143309228.page" target="_blank" rel="noopener">Korea Science JAKO202414143309228</a></td><td>2024</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-14"><td>[14]</td><td>폴리마켓 한국 접속차단·방심위 논거</td><td><a href="https://zdnet.co.kr/view/?no=20260818173958" target="_blank" rel="noopener">ZDNet Korea</a></td><td>2026-08-18</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-15"><td>[15]</td><td>폴리마켓 차단 — 불법도박 판단</td><td><a href="https://edaily.co.kr/News/Read?mediaCodeNo=257&amp;newsId=01863046645548960" target="_blank" rel="noopener">이데일리</a></td><td>2026-08-18</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-16"><td>[16]</td><td>경마선생 AI 경마예상(공공데이터 기반·구독)</td><td><a href="https://play.google.com/store/apps/details?id=kr.co.publicdata.horse&amp;hl=ko" target="_blank" rel="noopener">Google Play</a></td><td>n/a</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-17"><td>[17]</td><td>코리아레이스 마패(MapAI) 사용자 커스텀 예상</td><td><a href="https://www.korearace.com/LiveTool/MapAI.asp" target="_blank" rel="noopener">코리아레이스</a></td><td>n/a</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-18"><td>[18]</td><td>말고리즘 마사회 공모전 수상·데이터 개방 방침</td><td><a href="https://sports.news.nate.com/view/20260814n30656" target="_blank" rel="noopener">네이트 스포츠</a></td><td>2026-08-14</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-19"><td>[19]</td><td>온라인 마권 10% 제한·더비온 등록자 91,943명</td><td><a href="https://view.asiae.co.kr/article/2025031716363968168" target="_blank" rel="noopener">아시아경제</a></td><td>2025-03-17</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-20"><td>[20]</td><td>국민체육진흥법 제26조·제53조</td><td><a href="https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%AD%EB%AF%BC%EC%B2%B4%EC%9C%A1%EC%A7%84%ED%9D%A5%EB%B2%95" target="_blank" rel="noopener">국가법령정보센터</a></td><td>n/a</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-21"><td>[21]</td><td>마사회 경마유사행위 단속·형량 보도</td><td><a href="https://biz.heraldcorp.com/article/10840294" target="_blank" rel="noopener">헤럴드경제</a></td><td>n/a</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-22"><td>[22]</td><td>경마 예상 앱 App Store 유통 실증</td><td><a href="https://apps.apple.com/us/app/id997610840" target="_blank" rel="noopener">Apple App Store 경마톡</a></td><td>n/a</td><td>2026-08-27</td><td>높음</td></tr><tr id="src-23"><td>[23]</td><td>국내 경마 데이터 공개 프로젝트(서울 3년 26,828행)</td><td><a href="https://github.com/mjs1995/Contest_Horse" target="_blank" rel="noopener">GitHub mjs1995/Contest_Horse</a></td><td>n/a</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-24"><td>[24]</td><td>2026 공공데이터 활용 경진대회 목록(마사회 부재)</td><td><a href="https://www.data.go.kr/suc/preliminaryRound.do" target="_blank" rel="noopener">공공데이터포털</a></td><td>2026</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-25"><td>[25]</td><td>온라인 마권발매 총량 제한 현황</td><td><a href="https://www.horsebiz.co.kr/news/articleView.html?idxno=72517" target="_blank" rel="noopener">말산업저널</a></td><td>n/a</td><td>2026-08-27</td><td>중간</td></tr><tr id="src-26"><td>[26]</td><td>합법경마 매출 7.4조(2008)→6.5조(2024)</td><td><a href="https://namu.wiki/w/%EA%B2%BD%EB%A7%88/%ED%95%9C%EA%B5%AD" target="_blank" rel="noopener">나무위키 경마/한국</a></td><td>n/a</td><td>2026-08-27</td><td>**낮음 — 2차 출처, §8-6**</td></tr><tr id="src-27"><td>[27]</td><td><strong>실호출 검증</strong> — 승인 7종 동작 확인, 93필드 스펙, weather/track 충전율 100%, 2000~2026 697,876행, 결측률, 월별 편성, 누수 위험 3종</td><td>자체 실측 (<code>kra_client.py</code> · 개발계정 인증키)</td><td>2026-08-27</td><td>2026-08-27</td><td>높음 (1차)</td></tr></tbody></table>
+      </div>
+    </details>
+    <p style="font-size:13px; color:var(--muted)"><strong>프로젝트 내부 문서</strong>(리서치 방화벽상 증거 아님, 대조용): <code>docs/SSAFY블록체인(예측).pdf</code>(공식 명세서) · <code>docs/기획</code>(1차 조사보고서) · <code>_bmad-output/brainstorming/…-2026-08-21/brainstorm-intent.md</code></p>
+  </section>
+
+  <!-- ══════════ STALENESS ══════════ -->
+  <section id="stale">
+    <h2><span class="kicker">11</span>신선도 지도</h2>
+    <div class="stale">
+      <div class="stale-row urgent">
+        <div><span class="cls">version / compat</span><span class="det">API 필드·트래픽·엔드포인트 [1][4][5] · 발행 2026-08 · 기준 ≤1개월</span></div>
+        <div class="when">재확인 2026-09</div>
+      </div>
+      <div class="stale-row urgent">
+        <div><span class="cls">시장 size / growth</span><span class="det">온라인 마권 등록자·매출 [19][26] · 발행 2025-03 · 기준 ≤18개월</span></div>
+        <div class="when">재확인 2026-09</div>
+      </div>
+      <div class="stale-row">
+        <div><span class="cls">규제 (유동적)</span><span class="det">폴리마켓 차단, 예측시장 규제 동향 [14][15] · 발행 2026-08 · 기준 ≤3개월</span></div>
+        <div class="when">재확인 2026-11</div>
+      </div>
+      <div class="stale-row">
+        <div><span class="cls">경쟁 traction</span><span class="det">경마선생·마패·말고리즘 현황 [16][17][18] · 발행 2026-08 · 기준 ≤3개월</span></div>
+        <div class="when">재확인 2026-11</div>
+      </div>
+      <div class="stale-row">
+        <div><span class="cls">법률 (조문)</span><span class="det">마사회법 제48·50조, 게임산업법 제2조 [6][7][8] · 시행 2020~2025 · 기준 ≤2년</span></div>
+        <div class="when">재확인 2027-08</div>
+      </div>
+      <div class="stale-row">
+        <div><span class="cls">academic</span><span class="det">LTR 선행연구 [12][13] · 발행 2024~2025 · 기준 ≤2년</span></div>
+        <div class="when">재확인 2027-11</div>
+      </div>
+    </div>
+    <div class="note warn" style="margin-top:18px">
+      <span class="nh">가장 먼저 상하는 것</span>
+      <p><strong>API 스펙 — 2026년 9월.</strong> 세 데이터셋 모두 2026-08 초·중순에 수정됐고, 마사회가 “AI 관련 경마 데이터 개방 활성화 방안 수립” 중이라고 밝힌 만큼<sup class="cite"><a href="#src-18">[18]</a></sup> 추가 데이터셋이 나올 가능성이 높다. <strong>다음 달에 다시 확인할 것.</strong></p>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>BMad Deep Recon</strong> · technical run · deep preset · validation normal · subagents none(리드 순차 수행)</p>
+    <p>워크스페이스 <code>_bmad-output/planning-artifacts/research/technical-horse-racing-2026-08-27/</code> — <code>research.md</code>(정본) · <code>data-inventory.md</code>(실호출 검증 인벤토리) · <code>digests/</code>(라운드별 원자료 7건) · <code>.memlog.md</code>(원장 19건) · 루트의 <code>kra_client.py</code> · <code>probe_latency.py</code> · <code>kra_specs/</code></p>
+    <p>인용 검증 통과 — dangling marker 0, orphaned row 0. 주장 원장 14건 중 확인 11 · 미확인 2 · 번복 1.</p>
+  </footer>
+
+  </main>
+</div>
+</div>
