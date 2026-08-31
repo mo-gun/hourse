@@ -13,6 +13,15 @@ venv/
 # ── BMAD 개인 설정 (설치본이 gitignore 를 전제로 함) ────────
 _bmad/custom/config.user.toml
 
+# ── 대용량 중간 산출물 (재생성 가능) ──────────────────────
+# 원장 199MB — tools/backfill_ledger.py 로 재생성 (612콜, 10분)
+data/ledger_2010_2026.csv
+data/aux_train.csv
+data/aux_shoe.csv
+# 학습셋 비압축본 247MB / parquet 79MB — 공유본은 .csv.gz 하나만 커밋한다
+dataset/kra_ml_v1.csv
+dataset/kra_ml_v1.parquet
+
 # ── OS / 편집기 ───────────────────────────────────────────
 Thumbs.db
 .DS_Store
