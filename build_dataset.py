@@ -25,6 +25,7 @@ import pandas as pd
 import numpy as np
 
 import schema as S
+import aux_join as AX
 
 LEDGER = "data/ledger_2010_2026.csv"
 OUTDIR = "dataset"
@@ -317,6 +318,12 @@ def _rate(w, n):
 
 def rolling_features(df):
     n = len(df)
+    print("보조 인덱스 로드...", flush=True)
+    tr_idx = AX.load_train_index()
+    sh_idx = AX.load_shoe_index()
+    ped = AX.load_pedigree()
+    AX.report_coverage(df, ped)
+    sire_st, dam_st, dsire_st = AX.SireState(), AX.SireState(), AX.SireState()
     print(f"as-of 롤링 단일 패스 ({n:,}행)...", flush=True)
 
     # ── 상태 저장소 ──
@@ -479,6 +486,28 @@ def rolling_features(df):
         q = jktr[(jk, tn)]
         out["F3_jktr_win_rate"][i] = _rate(q[1], q[0])
 
+        # 조교 · 장제 — 경주일 이전 창만
+        t5 = AX.train_features(tr_idx, hr, day)
+        (out["F1_tr_sessions_28d"][i], out["F1_tr_minutes_28d"][i],
+         out["F1_tr_days_since"][i], out["F1_tr_swim_28d"][i],
+         out["F1_tr_intensity_chg"][i]) = t5
+        sh = AX.shoe_features(sh_idx, hr, day)
+        out["F1_shoe_days_since"][i], out["F1_shoe_type_chg"][i] = sh[0], sh[1]
+        out_s["F1_shoe_type"][i] = sh[2]
+
+        # 혈통 — 식별자는 정적, 자마 성적은 as-of 누적
+        fa, mo, ds = ped.get(hr, (None, None, None))
+        out_s["F2_sire_id"][i] = fa
+        out_s["F2_dam_id"][i] = mo
+        out_s["F2_damsire_id"][i] = ds
+        wet_i = wet_a[i] == 1
+        e7 = sire_st.emit(fa, band, wet_i)
+        for c, v in zip(AX.F2_EMIT_COLS, e7):
+            out[c][i] = v
+        out["F2_dam_progeny_starts"][i] = dam_st.emit(mo, band, wet_i)[0]
+        out["F2_dam_progeny_win_rate"][i] = dam_st.emit(mo, band, wet_i)[1]
+        out["F2_damsire_win_rate"][i] = dsire_st.emit(ds, band, wet_i)[1]
+
         # ───────── update : 이 경주 결과를 반영 ─────────
         wv, pv = int(win_a[i]), int(plc_a[i])
         h[0] += 1; h[1] += wv; h[2] += pv
@@ -502,6 +531,8 @@ def rolling_features(df):
                      posE_a[i], posM_a[i], posL_a[i], ts1f_a[i], tg3f_a[i]))
         if len(hist) > 40:                 # 메모리 상한 — 40경주면 모든 창을 덮는다
             del hist[:-40]
+        for st, key in ((sire_st, fa), (dam_st, mo), (dsire_st, ds)):
+            st.update(key, hr, band, wet_a[i] == 1, wv, spd_a[i], dist_a[i])
 
         if i and i % 100000 == 0:
             print(f"    {i:,}/{n:,}  {time.time()-t0:.0f}s", flush=True)
@@ -544,8 +575,14 @@ ROLL_NUM = [
     "F4_hr_meet_win_rate", "F4_hr_wet_starts", "F4_hr_wet_win_rate",
     "F5_early_pos", "F5_mid_pos", "F5_late_pos", "F5_pos_gain",
     "F5_style_consistency", "F5_sect_n", "F5_s1f_time", "F5_g3f_time", "F5_g3f_best",
+    "F1_tr_sessions_28d", "F1_tr_minutes_28d", "F1_tr_days_since", "F1_tr_swim_28d",
+    "F1_tr_intensity_chg", "F1_shoe_days_since", "F1_shoe_type_chg",
+    "F2_sire_starts", "F2_sire_win_rate", "F2_sire_speed_avg", "F2_sire_dist_fit",
+    "F2_sire_wet_fit", "F2_sire_avg_win_dist", "F2_sire_prog_n",
+    "F2_damsire_win_rate", "F2_dam_progeny_starts", "F2_dam_progeny_win_rate",
 ]
-ROLL_STR = ["F1_grade_last", "F5_style"]
+ROLL_STR = ["F1_grade_last", "F5_style", "F1_shoe_type",
+            "F2_sire_id", "F2_dam_id", "F2_damsire_id"]
 
 
 def add_race_level_pace(df):
@@ -562,19 +599,74 @@ def add_race_level_pace(df):
     return df
 
 
+def write_shards(out):
+    """split 별 gzip CSV. train 은 105MB 라 기간으로 한 번 더 쪼갠다."""
+    import gzip, shutil
+    shards = [("valid", out["split"] == "valid"),
+              ("test", out["split"] == "test")]
+    tr = out["split"] == "train"
+    d = out["rcDate"].astype(int)
+    shards = [("train_2010_2017", tr & (d <= 20171231)),
+              ("train_2018_2024", tr & (d >= 20180101))] + shards
+    print("\n팀 공유본 (dataset/shards/)")
+    os.makedirs(f"{OUTDIR}/shards", exist_ok=True)
+    total = 0
+    for name, mask in shards:
+        sub = out[mask]
+        if not len(sub):
+            continue
+        raw = f"{OUTDIR}/shards/kra_ml_v1_{name}.csv"
+        sub.to_csv(raw, index=False, encoding="utf-8-sig", float_format="%.5g")
+        with open(raw, "rb") as a, gzip.open(raw + ".gz", "wb", compresslevel=9) as b:
+            shutil.copyfileobj(a, b)
+        mb = os.path.getsize(raw + ".gz") / 1e6
+        total += mb
+        os.remove(raw)
+        flag = "  ⚠ 100MB 초과" if mb > 100 else ""
+        print(f"  kra_ml_v1_{name}.csv.gz  {len(sub):>7,}행  {mb:5.0f} MB{flag}")
+    print(f"  합계 {total:.0f} MB")
+
+
+def add_within_race_norm(df):
+    """경주 내 상대화 — _z(z-score) 와 _rk(순위 백분위).
+
+    경마는 절대 실력이 아니라 **그 경주 안에서 누가 제일 나은가**의 문제다(Bolton&Chapman).
+    절대값만 주면 모델이 그 비교를 트리 분할로 간접 학습해야 한다.
+    한 마리짜리 경주나 전원 동일값이면 std=0 이므로 _z 는 0 으로 둔다.
+    """
+    g = df.groupby("race_id", sort=False)
+    new = {}
+    made = 0
+    for c in S.NORMALIZE_WITHIN_RACE:
+        if c not in df.columns:
+            continue
+        v = pd.to_numeric(df[c], errors="coerce")
+        mu = v.groupby(df["race_id"]).transform("mean")
+        sd = v.groupby(df["race_id"]).transform("std")
+        new[c + "_z"] = ((v - mu) / sd.replace(0, np.nan)).fillna(0.0)
+        new[c + "_rk"] = v.groupby(df["race_id"]).rank(pct=True)
+        made += 2
+    df = pd.concat([df, pd.DataFrame(new, index=df.index)], axis=1)
+    print(f"  경주 내 정규화 {made}컬럼 생성 (_z / _rk)")
+    return df
+
+
+def add_base_features(df):
+    """원장 컬럼 → X_* 기본 피처. 경주 내 정규화보다 **먼저** 돌아야 한다
+    (X_wgBudam / X_rating / X_ilsu 가 정규화 대상이라, 늦게 만들면 조용히 빠진다)."""
+    base = {
+        "X_age": df["age"], "X_sex": df["sex"],
+        "X_prd_cty": df["name"],                 # 산지는 prd 가 아니라 name 컬럼
+        "X_rcDist": df["rcDist"], "X_grade": df["rank"],
+        "X_chulNo": df["chulNo"], "X_dusu": df["dusu"],
+        "X_wgBudam": df["wgBudam"], "X_ilsu": df["ilsu"],
+        "X_rating": df["rating"], "X_prize_cond": df["chaksun1"],
+        "F4_month": (df["rcDate"].astype(int) // 100) % 100,
+    }
+    return pd.concat([df, pd.DataFrame(base, index=df.index)], axis=1)
+
+
 def finalize(df):
-    df["X_age"] = df["age"]
-    df["X_sex"] = df["sex"]
-    df["X_prd_cty"] = df["name"]                 # 산지는 prd 가 아니라 name 컬럼
-    df["X_rcDist"] = df["rcDist"]
-    df["X_grade"] = df["rank"]
-    df["X_chulNo"] = df["chulNo"]
-    df["X_dusu"] = df["dusu"]
-    df["X_wgBudam"] = df["wgBudam"]
-    df["X_ilsu"] = df["ilsu"]
-    df["X_rating"] = df["rating"]
-    df["X_prize_cond"] = df["chaksun1"]
-    df["F4_month"] = (df["rcDate"].astype(int) // 100) % 100
 
     # 아직 소스가 없는 컬럼은 스키마 유지를 위해 빈 값으로 만든다
     pending = [c for c in S.features() if c not in df.columns]
@@ -585,7 +677,13 @@ def finalize(df):
     cols = ([c["name"] for c in S.INDEX] + [c["name"] for c in S.TARGETS] +
             S.features() + [c["name"] for c in S.F6X])
     cols = [c for c in cols if c in df.columns]
-    return df[cols], pending
+    out = df[cols].copy()
+    # 범주형을 category dtype 으로 굳힌다. LightGBM 은 이걸 그대로 먹어서
+    # 팀원이 별도 인코딩을 안 해도 된다. CSV 로 나갈 땐 문자열로 떨어진다.
+    for c in S.CATEGORICAL + ["split"]:
+        if c in out.columns:
+            out[c] = out[c].astype("category")
+    return out, pending
 
 
 def main():
@@ -595,6 +693,11 @@ def main():
     a = ap.parse_args()
 
     os.makedirs(OUTDIR, exist_ok=True)
+    global OUT_CSV, OUT_PARQUET
+    if a.limit:            # 부분 실행이 전체본을 덮어쓰지 않도록 경로를 분리한다
+        OUT_CSV = f"{OUTDIR}/_sample_{a.limit}.csv"
+        OUT_PARQUET = f"{OUTDIR}/_sample_{a.limit}.parquet"
+        print(f"[샘플 모드] 출력 → {OUT_CSV}")
     t0 = time.time()
     df = load_ledger(a.limit)
     df = assign_split(df)
@@ -603,22 +706,27 @@ def main():
     df = add_section_positions(df)
     df = rolling_features(df)
     df = add_race_level_pace(df)
+    df = add_base_features(df)
+    df = add_within_race_norm(df)
     out, pending = finalize(df)
 
     # 누수 검사 — 금지 필드가 결과에 남아있으면 즉시 실패
     bad = [c for c in out.columns if c in S.FORBIDDEN_SOURCE_FIELDS]
     assert not bad, f"누수 컬럼 발견: {bad}"
 
-    # float_format 은 파일 크기를 위한 것. 유효숫자 6자리면 승률·시간 피처에 충분하고
-    # 405MB → 247MB, gzip 후 76MB 로 GitHub 100MB 제한 안에 들어온다.
-    out.to_csv(OUT_CSV, index=False, encoding="utf-8-sig", float_format="%.6g")
+    # float64 는 불필요하다. 32비트면 경마 피처 정밀도로 충분하고 용량이 절반이다.
+    f64 = [c for c in out.columns if str(out[c].dtype) == "float64"]
+    if f64:
+        out[f64] = out[f64].astype("float32")
+
+    out.to_csv(OUT_CSV, index=False, encoding="utf-8-sig", float_format="%.5g")
     print(f"\n저장 {OUT_CSV}  {len(out):,}행 × {len(out.columns)}열  "
-          f"({os.path.getsize(OUT_CSV)/1e6:.0f} MB)")
-    import gzip, shutil
-    with open(OUT_CSV, "rb") as a, gzip.open(OUT_CSV + ".gz", "wb", compresslevel=9) as b:
-        shutil.copyfileobj(a, b)
-    print(f"저장 {OUT_CSV}.gz  ({os.path.getsize(OUT_CSV + '.gz')/1e6:.0f} MB)  "
-          f"— 팀 공유본. pd.read_csv 가 .gz 를 그대로 읽는다")
+          f"({os.path.getsize(OUT_CSV)/1e6:.0f} MB)  — 로컬 전체본")
+
+    # 팀 공유본은 split 별로 쪼개서 낸다. 이유 두 가지:
+    #   1) 통짜 gzip 이 107MB 라 GitHub 100MB 하드리밋을 넘는다 (train 만도 105MB)
+    #   2) test 를 물리적으로 분리하면 "test 는 최종 1회만" 규칙이 실수로 깨지지 않는다
+    write_shards(out)
     if not a.no_parquet:
         try:
             out.to_parquet(OUT_PARQUET, index=False)

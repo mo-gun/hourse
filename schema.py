@@ -21,7 +21,7 @@
     cols = features(exclude_leaky=True)          # 기본값 — 누수 컬럼은 애초에 안 나옴
 """
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 DATASET_FILE = "dataset/kra_ml_v1.parquet"
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -290,6 +290,53 @@ F6X = [
     _c("F6X_overround", "F6X", "P", "float32", "경주 공제율 = Σ(1/odds) - 1", "경주 단위 집계"),
 ]
 
+# ─────────────────────────────────────────────────────────────────────────
+# 경주 내 정규화 (v1.1)
+#   Bolton & Chapman / conditional logit 은 애초에 '경주 안에서의 상대 비교'가 전제다.
+#   F3_jk_win_rate_365=0.15 가 좋은 값인지는 **같은 경주 다른 기수들이 몇인지**에 달렸다.
+#   절대값만 주면 모델이 그 관계를 트리 분할로 간접 학습해야 하므로, 아래 피처들에 대해
+#     _z  : 경주 내 z-score  (평균 0, 표준편차 1. 크기 정보 보존)
+#     _rk : 경주 내 순위 백분위 0~1 (이상치에 강건)
+#   두 개를 함께 낸다. 원본 절대값도 그대로 남는다.
+NORMALIZE_WITHIN_RACE = [
+    "X_wgBudam", "X_rating", "X_wgHr_delta", "X_ilsu",
+    "F1_win_rate_life", "F1_win_rate_365", "F1_ordpct_avg5",
+    "F1_speed_avg3", "F1_speed_best365", "F1_prize_365",
+    "F2_sire_win_rate", "F2_sire_speed_avg", "F2_sire_dist_fit",
+    "F3_jk_win_rate_life", "F3_jk_win_rate_365", "F3_tr_win_rate_365",
+    "F3_jkhr_win_rate",
+    "F4_hr_dist_win_rate", "F4_hr_dist_speed", "F4_hr_wet_win_rate",
+    "F5_early_pos", "F5_g3f_time", "F5_pos_gain",
+]
+
+# 범주형 — parquet/CSV 로 저장할 때 category dtype 으로 굳힌다.
+# LightGBM 은 category dtype 을 그대로 먹는다(별도 인코딩 불필요).
+CATEGORICAL = [
+    "X_sex", "X_prd_cty", "X_grade", "F1_grade_last", "F1_shoe_type",
+    "F4_dist_band", "F4_track_state", "F4_weather", "F5_style",
+    "F2_sire_id", "F2_dam_id", "F2_damsire_id", "F2_sire_cty", "F2_damsire_cty",
+]
+
+
+def _norm_cols():
+    """NORMALIZE_WITHIN_RACE 각 항목에 대한 _z / _rk 컬럼 정의를 생성."""
+    base = {c["name"]: c for blk in (X, F1, F2, F3, F4, F5, F6) for c in blk}
+    out = []
+    for name in NORMALIZE_WITHIN_RACE:
+        src = base.get(name)
+        if src is None:
+            continue
+        for suf, what in (("_z", "경주 내 z-score"), ("_rk", "경주 내 순위 백분위 0~1")):
+            out.append(_c(name + suf, src["group"], src["tier"], "float32",
+                          f"{what} — {src['desc'][:40]}", "파생"))
+    return out
+
+
+NORM = _norm_cols()
+for _c_ in NORM:                       # 원래 그룹 블록에 편입 — features() 가 자동으로 집는다
+    {"X": X, "F1": F1, "F2": F2, "F3": F3, "F4": F4, "F5": F5, "F6": F6}[
+        _c_["group"]].append(_c_)
+
 FEATURE_BLOCKS = {"X": X, "F1": F1, "F2": F2, "F3": F3, "F4": F4, "F5": F5, "F6": F6}
 ALL_COLUMNS = INDEX + TARGETS + X + F1 + F2 + F3 + F4 + F5 + F6 + F6X
 
@@ -347,6 +394,30 @@ def features(groups=None, tier=None, exclude_leaky=True):
                 continue
             out.append(c["name"])
     return out
+
+
+def load(split=None, base="dataset/shards"):
+    """팀 공유본 로더 — 6명이 같은 방식으로 읽도록.
+
+        df = load("train")          # 학습셋 (2010~2024, 두 샤드 자동 결합)
+        df = load(["train","valid"])
+        df = load()                 # 전부 (test 포함 — 최종 평가 때만)
+
+    test 는 별도 파일이라 실수로 딸려오지 않는다. 최종 1회만 명시적으로 부를 것.
+    """
+    import glob
+    import pandas as pd
+    want = [split] if isinstance(split, str) else (split or ["train", "valid", "test"])
+    files = []
+    for w in want:
+        files += sorted(glob.glob(f"{base}/kra_ml_v1_{w}*.csv.gz"))
+    if not files:
+        raise FileNotFoundError(f"{base} 에 샤드가 없다. python build_dataset.py 먼저 실행.")
+    df = pd.concat([pd.read_csv(f, low_memory=False) for f in files], ignore_index=True)
+    for c in CATEGORICAL + ["split"]:
+        if c in df.columns:
+            df[c] = df[c].astype("category")
+    return df.sort_values(["rcDate", "meet", "rcNo", "X_chulNo"]).reset_index(drop=True)
 
 
 def group_of(col):

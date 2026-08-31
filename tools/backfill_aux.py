@@ -79,7 +79,8 @@ def do_train(y0=2010, y1=2026):
     f = io.open(out, "w" if new else "a", encoding="utf-8-sig", newline="")
     w = csv.writer(f)
     if new:
-        w.writerow(["hrNo", "trDate", "n_sessions", "minutes", "swim", "chul"])
+        w.writerow(["hrNo", "trDate", "n_sessions", "minutes", "swim_n",
+                    "swim_laps", "jk_ridden", "entered"])
     calls = tot = 0
     t0 = time.time()
     for y in range(y0, y1 + 1):
@@ -95,7 +96,9 @@ def do_train(y0=2010, y1=2026):
                 print(f"  [실패] {tag}: {str(e)[:70]}", file=sys.stderr)
                 continue
             calls += 1
-            agg = defaultdict(lambda: [0, 0.0, 0, ""])
+            # time 은 '15분'(일반 조교) 또는 '2바퀴'(수영). swimTr 은 '수영훈련' / '-'.
+            # prGubun 이 '기수'면 기수가 직접 태운 것 — 본격 조교 신호라 따로 센다.
+            agg = defaultdict(lambda: [0, 0.0, 0, 0.0, 0, 0])
             for r in rows:
                 hn = str(r.get("hrNo", "")).strip()
                 dt = str(r.get("trDate", "")).strip()
@@ -103,15 +106,22 @@ def do_train(y0=2010, y1=2026):
                     continue
                 a = agg[(hn, dt)]
                 a[0] += 1
-                try:
-                    a[1] += float(str(r.get("time", "0")).strip() or 0)
-                except Exception:
-                    pass
-                if str(r.get("swimTr", "")).strip() in ("Y", "1", "수영"):
+                t = str(r.get("time", "")).strip()
+                num = "".join(ch for ch in t if ch.isdigit() or ch == ".")
+                val = float(num) if num else 0.0
+                if t.endswith("분"):
+                    a[1] += val
+                elif t.endswith("바퀴"):
+                    a[3] += val
+                if str(r.get("swimTr", "")).strip() == "수영훈련":
                     a[2] += 1
-                a[3] = str(r.get("chulGubun", "")).strip() or a[3]
+                if str(r.get("prGubun", "")).strip() == "기수":
+                    a[4] += 1
+                if str(r.get("chulGubun", "")).strip() == "금주출전":
+                    a[5] = 1
             for (hn, dt), a in agg.items():
-                w.writerow([hn, dt, a[0], round(a[1], 1), a[2], a[3]])
+                w.writerow([hn, dt, a[0], round(a[1], 1), a[2],
+                            round(a[3], 1), a[4], a[5]])
             f.flush()
             tot += len(agg)
             done.add(tag)

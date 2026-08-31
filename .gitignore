@@ -18,9 +18,13 @@ _bmad/custom/config.user.toml
 data/ledger_2010_2026.csv
 data/aux_train.csv
 data/aux_shoe.csv
-# 학습셋 비압축본 247MB / parquet 79MB — 공유본은 .csv.gz 하나만 커밋한다
+# 학습셋 로컬 전체본 — 공유본은 dataset/shards/*.csv.gz 만 커밋한다
+# (통짜 gzip 이 107MB 로 GitHub 100MB 하드리밋 초과. train 만도 105MB)
 dataset/kra_ml_v1.csv
+dataset/kra_ml_v1.csv.gz
 dataset/kra_ml_v1.parquet
+dataset/_sample_*
+data/pedigree_daily.log
 
 # ── OS / 편집기 ───────────────────────────────────────────
 Thumbs.db
