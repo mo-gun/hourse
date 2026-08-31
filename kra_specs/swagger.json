@@ -1,58 +1,26 @@
 [
  {
-  "id": "15143803",
-  "title": "한국마사회_AI학습용_경주결과",
-  "url": "https://apis.data.go.kr/B551015/raceResult",
-  "params": [],
-  "fields": []
+  "id": "15105087",
+  "error": "AttributeError: 'list' object has no attribute 'get'"
  },
  {
-  "id": "15143802",
-  "title": "한국마사회_AI학습용_경주계획",
-  "url": "https://apis.data.go.kr/B551015/API154/racePlan",
-  "params": [],
-  "fields": []
+  "id": "15063955",
+  "error": "AttributeError: 'list' object has no attribute 'get'"
+ },
+ {
+  "id": "15057985",
+  "error": "AttributeError: 'list' object has no attribute 'get'"
+ },
+ {
+  "id": "15059488",
+  "error": "AttributeError: 'list' object has no attribute 'get'"
  },
  {
   "id": "15150068",
-  "title": "한국마사회_AI기반연구용_경주결과상세",
-  "url": "https://apis.data.go.kr/B551015/API156/raceRsutDtl",
-  "params": [],
-  "fields": []
+  "error": "AttributeError: 'list' object has no attribute 'get'"
  },
  {
-  "id": "15058305",
-  "title": "한국마사회 경주기록 정보",
-  "url": "https://apis.data.go.kr/B551015/API4_3/raceResult_3",
-  "params": [],
-  "fields": []
- },
- {
-  "id": "15057859",
-  "title": "한국마사회 마필 구간별 경주기록",
-  "url": "https://apis.data.go.kr/B551015/API37_1/sectionRecord_1",
-  "params": [],
-  "fields": []
- },
- {
-  "id": "15058559",
-  "title": "한국마사회_확정배당율 통합 정보",
-  "url": "https://apis.data.go.kr/B551015/integratedInfo_1",
-  "params": [],
-  "fields": []
- },
- {
-  "id": "15058779",
-  "title": "한국마사회 경주마 성적 정보",
-  "url": "https://apis.data.go.kr/B551015/API15_2/raceHorseResult_2",
-  "params": [],
-  "fields": []
- },
- {
-  "id": "15119524",
-  "title": "한국마사회_경마시행당일_경주결과종합",
-  "url": "https://apis.data.go.kr/B551015/Race_Result_total",
-  "params": [],
-  "fields": []
+  "id": "15143802",
+  "error": "AttributeError: 'list' object has no attribute 'get'"
  }
 ]

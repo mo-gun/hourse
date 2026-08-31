@@ -43,7 +43,32 @@ ENDPOINTS = {
     'horse_record':      ('API15_2/raceHorseResult_2',  ['meet', 'hr_no', 'hr_name']),
     'horse_rating':      ('API77/raceHorseRating',      []),
     'trainer_record':    ('trtresult/gettrtresult',     ['meet']),
+
+    # ── 2026-08-31 추가 신청분. 전부 실호출 resultCode=00 확인 ──────────────
+    # ⚠ data.go.kr Swagger 의 `host` 에 API 번호가 들어있다(basePath 아님).
+    #    예: host="apis.data.go.kr/B551015/trcontihi" + path="/gettrcontihi"
+    # ★ 조교. 훈련일자·시작/종료시각·기승자구분·출전구분·수영훈련. 2010~ 소급(연 35~46만건).
+    #   경주 전 확정이라 누수 없음 — schema.py F1(최근 성적)의 컨디션 축.
+    'train_record':      ('trcontihi/gettrcontihi',     ['hrname', 'hrno', 'tr_date_fr', 'tr_date_to']),
+    # ★ 장제(편자). 장제형태·제형·지세·각도. 2010~ 소급(연 ~3만건).
+    #   shoe_date 범위 파라미터가 있어 시점 정합 가능 = 누수 없음.
+    'horse_shoe':        ('API191_1/HorseShoe_1',       ['meet', 'shoe_date_fr', 'shoe_date_to']),
+    # ★ 마필종합 218필드. 혈통 3대: fhrNo(부마) mhrNo(모마) mhrFhrNo(외조부).
+    #   ⚠ 누적필드는 누수 — LEAKY_TOTAL_HORSE 참조. 혈통 식별자만 쓸 것.
+    'horse_total':       ('API42_1/totalHorseInfo_1',   ['hr_name', 'hr_no']),
+    # 씨수말(부마) 마스터 — 부마 단위 집계용.
+    'stallion':          ('API79_1/stallionInfo_1',     ['hr_name', 'hr_no']),
+    # 경주별 상세성적표.
+    'race_detail':       ('racedetailresult/getracedetailresult', ['meet', 'rc_date', 'rc_no']),
+    # 경주마 상세정보(마스터).
+    'horse_info':        ('API8_2/raceHorseInfo_2',     ['meet', 'hr_name', 'hr_no']),
 }
+
+# ⚠ 마필종합(API42_1)의 누적 스냅샷 필드 — LEAKY_FIELDS 와 같은 이유로 금지.
+#   혈통 자마 성적은 원장에서 '그 경주일 이전' 행만으로 직접 집계할 것 (schema.py F2 참조).
+LEAKY_TOTAL_HORSE = ['rcCnt', 'fstCnt', 'sndCnt', 'trdCnt', 'forthCnt', 'fifthCnt',
+                     'winRate', 'quinRate', 'avgWinDist', 'rankTop', 'rankLast',
+                     'fgnRcCnt', 'fgnFstCnt', 'fgnSndCnt', 'fgnTrdCnt', 'fgnAvgWinDist']
 
 # ⚠ 누수 주의 — '오늘 기준 누적 스냅샷'이라 과거 경주 행에 붙이면 미래 정보가 샌다.
 #   실측 근거: 같은 말(신의운명 0047543)의 rcCntT 가 2025-01 / 2025-07 / 2026-07 출전표에서
