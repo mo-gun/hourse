@@ -17,9 +17,9 @@ from collections import defaultdict
 import pandas as pd
 import numpy as np
 
-TRAIN_CSV = "data/aux_train.csv"
-SHOE_CSV = "data/aux_shoe.csv"
-PED_CSV = "data/aux_pedigree.csv"
+TRAIN_CSV = "data/raw/aux_train.csv"
+SHOE_CSV = "data/raw/aux_shoe.csv"
+PED_CSV = "data/raw/aux_pedigree.csv"
 
 W28 = 28
 

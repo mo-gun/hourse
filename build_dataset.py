@@ -27,8 +27,8 @@ import numpy as np
 import schema as S
 import aux_join as AX
 
-LEDGER = "data/ledger_2010_2026.csv"
-OUTDIR = "dataset"
+LEDGER = "data/raw/ledger_2010_2026.csv"
+OUTDIR = "dataset/v1"
 OUT_CSV = f"{OUTDIR}/kra_ml_v1.csv"
 OUT_PARQUET = f"{OUTDIR}/kra_ml_v1.parquet"
 

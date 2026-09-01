@@ -15,16 +15,16 @@ _bmad/custom/config.user.toml
 
 # ── 대용량 중간 산출물 (재생성 가능) ──────────────────────
 # 원장 199MB — tools/backfill_ledger.py 로 재생성 (612콜, 10분)
-data/ledger_2010_2026.csv
-data/aux_train.csv
-data/aux_shoe.csv
+data/raw/ledger_2010_2026.csv
+data/raw/aux_train.csv
+data/raw/aux_shoe.csv
 # 학습셋 로컬 전체본 — 공유본은 dataset/shards/*.csv.gz 만 커밋한다
 # (통짜 gzip 이 107MB 로 GitHub 100MB 하드리밋 초과. train 만도 105MB)
-dataset/kra_ml_v1.csv
-dataset/kra_ml_v1.csv.gz
-dataset/kra_ml_v1.parquet
-dataset/_sample_*
-data/pedigree_daily.log
+dataset/v1/kra_ml_v1.csv
+dataset/v1/kra_ml_v1.csv.gz
+dataset/v1/kra_ml_v1.parquet
+dataset/*/_sample_*
+data/raw/pedigree_daily.log
 
 # ── OS / 편집기 ───────────────────────────────────────────
 Thumbs.db

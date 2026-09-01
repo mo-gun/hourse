@@ -72,8 +72,8 @@ def page_all(path, **p):
 # ══════════════════════════════════════════════════════════════════════
 def do_train(y0=2010, y1=2026):
     """조교 → (hrNo, trDate) 일별 롤업."""
-    out = "data/aux_train.csv"
-    prog_f = "data/aux_train_progress.json"
+    out = "data/raw/aux_train.csv"
+    prog_f = "data/raw/aux_train_progress.json"
     done = set(json.load(io.open(prog_f, encoding="utf-8"))) if os.path.exists(prog_f) else set()
     new = not done or not os.path.exists(out)
     f = io.open(out, "w" if new else "a", encoding="utf-8-sig", newline="")
@@ -132,7 +132,7 @@ def do_train(y0=2010, y1=2026):
 
 
 def do_shoe(y0=2010, y1=2026):
-    out = "data/aux_shoe.csv"
+    out = "data/raw/aux_shoe.csv"
     cols = ["hrNo", "hrName", "shoeDate", "codeName2", "codeName3", "prName", "meet"]
     f = io.open(out, "w", encoding="utf-8-sig", newline="")
     w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore", restval="")
@@ -161,14 +161,14 @@ PED_COLS = ["hrNo", "hrName", "birthday", "sex", "faHrNo", "faHrName",
 
 
 def _load_ped():
-    if not os.path.exists("data/aux_pedigree.csv"):
+    if not os.path.exists("data/raw/aux_pedigree.csv"):
         return {}
-    with io.open("data/aux_pedigree.csv", encoding="utf-8-sig") as fh:
+    with io.open("data/raw/aux_pedigree.csv", encoding="utf-8-sig") as fh:
         return {r["hrNo"]: r for r in csv.DictReader(fh)}
 
 
 def _save_ped(d):
-    with io.open("data/aux_pedigree.csv", "w", encoding="utf-8-sig", newline="") as fh:
+    with io.open("data/raw/aux_pedigree.csv", "w", encoding="utf-8-sig", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=PED_COLS, extrasaction="ignore", restval="")
         w.writeheader()
         w.writerows(d.values())
@@ -199,7 +199,7 @@ def do_pedigree(topn=0):
 
     # 원장에서 출전 빈도 상위 말부터 — 행 커버리지를 빨리 올린다
     import pandas as pd
-    led = pd.read_csv("data/ledger_2010_2026.csv", dtype=str,
+    led = pd.read_csv("data/raw/ledger_2010_2026.csv", dtype=str,
                       encoding="utf-8-sig", usecols=["hrNo"], low_memory=False)
     freq = led["hrNo"].value_counts()
     todo = [h for h in freq.index if h and h not in ped][:topn]

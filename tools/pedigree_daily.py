@@ -16,7 +16,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 sys.stdout.reconfigure(encoding="utf-8")
 
-LOG = "data/pedigree_daily.log"
+LOG = "data/raw/pedigree_daily.log"
 DAILY = 2500
 TASK = "KRA_Pedigree"
 
@@ -30,9 +30,9 @@ def log(msg):
 
 def coverage():
     import pandas as pd
-    ped = pd.read_csv("data/aux_pedigree.csv", dtype=str, encoding="utf-8-sig")
+    ped = pd.read_csv("data/raw/aux_pedigree.csv", dtype=str, encoding="utf-8-sig")
     have = set(ped["hrNo"])
-    led = pd.read_csv("data/ledger_2010_2026.csv", dtype=str, encoding="utf-8-sig",
+    led = pd.read_csv("data/raw/ledger_2010_2026.csv", dtype=str, encoding="utf-8-sig",
                       usecols=["hrNo"], low_memory=False)
     c = led["hrNo"].isin(have)
     missing = led[~c]["hrNo"].nunique()

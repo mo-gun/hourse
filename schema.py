@@ -22,7 +22,7 @@
 """
 
 SCHEMA_VERSION = "1.1.0"
-DATASET_FILE = "dataset/kra_ml_v1.parquet"
+DATASET_FILE = "dataset/v1/kra_ml_v1.parquet"
 
 # ─────────────────────────────────────────────────────────────────────────
 # 그룹 — 팀원 1인이 하나씩 맡아 가중치를 높인다.
@@ -396,7 +396,7 @@ def features(groups=None, tier=None, exclude_leaky=True):
     return out
 
 
-def load(split=None, base="dataset/shards"):
+def load(split=None, base="dataset/v1/shards"):
     """팀 공유본 로더 — 6명이 같은 방식으로 읽도록.
 
         df = load("train")          # 학습셋 (2010~2024, 두 샤드 자동 결합)

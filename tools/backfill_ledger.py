@@ -28,8 +28,8 @@ BASE = "https://apis.data.go.kr/B551015"
 PATH = "API4_3/raceResult_3"
 ROWS = 5000                      # 실측: 1000 상한 없음. 월×경마장 최대 ~1,100행이라 1콜로 끝난다
 
-OUT = "data/ledger_2010_2026.csv"
-PROG = "data/ledger_progress.json"
+OUT = "data/raw/ledger_2010_2026.csv"
+PROG = "data/raw/ledger_progress.json"
 MEETS = (1, 2, 3)                # 1서울 2제주 3부산경남
 
 
@@ -84,11 +84,11 @@ def main(y0=2010, y1=2026):
     new_file = not os.path.exists(OUT) or not done
     if new_file:
         cols = discover_columns()
-        io.open("data/ledger_columns.json", "w", encoding="utf-8").write(
+        io.open("data/raw/ledger_columns.json", "w", encoding="utf-8").write(
             json.dumps(cols, ensure_ascii=False, indent=1))
         print(f"컬럼 합집합 {len(cols)}개 확정")
     else:
-        cols = json.load(io.open("data/ledger_columns.json", encoding="utf-8"))
+        cols = json.load(io.open("data/raw/ledger_columns.json", encoding="utf-8"))
 
     f = io.open(OUT, "w" if new_file else "a", encoding="utf-8-sig", newline="")
     w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore", restval="")
