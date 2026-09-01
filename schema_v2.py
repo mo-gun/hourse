@@ -52,7 +52,13 @@ HOLDOUT = {
     "seed": 20260901,      # ★ 절대 바꾸지 말 것. 바꾸면 예약이 무의미해진다
 }
 VALID_WEEKS = 26
-TEST_WEEKS = 8
+TEST_WEEKS = 16
+# test 를 8주(395경주)에서 16주로 늘린 이유 — 검정력.
+#   395경주에서 top-1 적중률의 표준오차는 √(0.36·0.64/395) ≈ 2.4%p 라
+#   팀원 간 5%p 미만 차이가 구분되지 않는다. 16주면 ~790경주, 표준오차 1.7%p.
+# valid/test 는 **개발 단계 전용**이다.
+#   하이퍼파라미터가 정해지고 6명 비교가 끝나면, 운영 모델은 game 을 뺀 전부
+#   (train+valid+test)로 매주 재학습한다. 그래야 주말 실시간 예측에 최신 10개월이 들어간다.
 RETRAIN = "매주 월요일. 주말 경주는 발주 후 15분 내 원장 반영됨(실측)."
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -81,6 +87,7 @@ LIT = {
     "BC": "Bolton&Chapman(1986) — 경주 단위 조건부로짓",
     "LS": "Lessmann 외(2010) — 경쟁구조 반영 RF 가 조건부로짓 상회",
     "PACE": "실무(pace figure) — (Par−Actual). 선행마 다수 → 페이스 붕괴 → 추입 유리",
+    "EBV": "KRA studbook 육종가 — BLUP 유전능력평가. 반기 스냅샷 20개를 as-of 조인",
 }
 
 
@@ -165,11 +172,29 @@ F1_PENDING = [
 # F2 — 부모 성적 (5). 신마 6.7% 에서 유일한 단서라 적어도 유지한다.
 # ═════════════════════════════════════════════════════════════════════════
 F2 = [
-    _c("F2_sire_id", "F2", "static", "A", "category", "부마 마번"),
-    _c("F2_sire_win_rate", "F2", "static", "A", "float32", "부마 자마 승률 (as-of)"),
-    _c("F2_sire_dist_fit", "F2", "static", "A", "float32", "부마 자마의 이번 거리대 승률"),
+    # ── 육종가(EBV) — KRA studbook 반기 스냅샷 20개(2016-07~2026-06)에서 as-of 조인 ──
+    #  BLUP 유전능력 추정치. 경주연도·경마장·거리·성별·연령·조교사·기수 환경효과를
+    #  보정하고 직계·방계 혈통 성적까지 활용한다. 내가 만들던 단순 부마 승률 집계보다 낫다.
+    #  ★ 육종가는 그 말 자신의 성적을 포함해 계산되므로 **경주일 직전 스냅샷**만 붙인다.
+    #    (ebv_join.py 가 강제. 검산 결과 위반 0건)
+    #  커버리지: 2017~2026 년 62~72%. 2016 년 28%, 그 이전 0%(스냅샷 시작 전).
+    _c("F2_ebv_prize", "F2", "static", "A", "float32",
+       "상금 육종가 — 평균100·표준편차20 표준화. 120=상위16%, 140=상위2.3%", "EBV"),
+    _c("F2_ebv_acc", "F2", "static", "A", "float32",
+       "상금 육종가 정확도 0~1 — **F2 신뢰도 가중치로 쓸 것**. 0.7 미만은 변동폭 큼", "EBV"),
+    _c("F2_ebv_sprint", "F2", "static", "A", "float32", "단거리 육종가 — 유전적 단거리 적성", "EBV"),
+    _c("F2_ebv_route", "F2", "static", "A", "float32", "중장거리 육종가", "EBV"),
+    _c("F2_ebv_dist_fit", "F2", "race", "A", "float32",
+       "이번 거리에 맞춘 육종가 = 단거리/중장거리 중 해당 쪽 (파생)", "EBV"),
+    _c("F2_ebv_time", "F2", "static", "A", "float32",
+       "주파기록 육종가(초) — 음수일수록 빠름", "EBV"),
+    _c("F2_ebv_ssgblup", "F2", "static", "A", "float32",
+       "SSGBLUP 육종가 — DNA 1만두 유전체 정보 반영", "EBV"),
+    _c("F2_inbreeding", "F2", "static", "A", "float32", "근교계수 %", "EBV"),
+    # ── API 혈통 — 육종가가 못 덮는 2016년 이전과 부마 계통 연결용 ──
+    _c("F2_sire_id", "F2", "static", "A", "category", "부마 마번 (마필종합 API)"),
+    _c("F2_sire_win_rate", "F2", "static", "A", "float32", "부마 자마 승률 (원장 as-of 집계)"),
     _c("F2_sire_prog_n", "F2", "static", "A", "int16", "부마 자마 두수 — 신뢰도 가중치"),
-    _c("F2_damsire_win_rate", "F2", "static", "A", "float32", "외조부 자마 승률 (as-of)"),
 ]
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -234,7 +259,7 @@ FEATURE_BLOCKS = {"X": X, "F1": F1, "F2": F2, "F3": F3, "F4": F4, "F5": F5, "F6"
 NORMALIZE_WITHIN_RACE = [
     "X_wgBudam", "X_rating",
     "F1_win_rate_life", "F1_ordpct_avg5", "F1_speed_avg3", "F1_prize_life",
-    "F2_sire_win_rate",
+    "F2_ebv_prize", "F2_ebv_dist_fit",
     "F3_jk_win_rate_365", "F3_tr_win_rate_365",
     "F4_hr_dist_win_rate",
     "F5_early_pos", "F5_g3f_time",

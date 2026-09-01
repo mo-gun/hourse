@@ -1,0 +1,409 @@
+<title>데이터 분할 규약</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap">
+
+<style>
+:root{
+  --ink:#191B1F; --ink-2:#3C3F45; --muted:#6E6A63;
+  --paper:#FAF9F6; --surface:#F1EFEA; --sunk:#E7E4DC;
+  --rule:#DAD5CC; --rule-2:#C6C0B4;
+  --train:#2B5C8A; --valid:#A8801A; --test:#7C2D3A; --game:#1F6F4A;
+  --train-w:#DCE7F1; --valid-w:#F2E9CE; --test-w:#F0DCE0; --game-w:#D5E8DE;
+  --warn:#9A3412; --warn-w:#F6E3D8;
+  --w:min(100% - 2.5rem, 74rem); --col:min(100% - 2.5rem, 44rem);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#EAE7E0; --ink-2:#BDB8AF; --muted:#8B857A;
+    --paper:#16171A; --surface:#1E2024; --sunk:#25272C;
+    --rule:#33363C; --rule-2:#454951;
+    --train:#7FB3DE; --valid:#D9B44A; --test:#D98A98; --game:#6FC49B;
+    --train-w:#1B2A38; --valid-w:#33290F; --test-w:#33191E; --game-w:#132B22;
+    --warn:#E08B5A; --warn-w:#33200F;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#EAE7E0; --ink-2:#BDB8AF; --muted:#8B857A;
+  --paper:#16171A; --surface:#1E2024; --sunk:#25272C;
+  --rule:#33363C; --rule-2:#454951;
+  --train:#7FB3DE; --valid:#D9B44A; --test:#D98A98; --game:#6FC49B;
+  --train-w:#1B2A38; --valid-w:#33290F; --test-w:#33191E; --game-w:#132B22;
+  --warn:#E08B5A; --warn-w:#33200F;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans KR",system-ui,-apple-system,sans-serif;
+  font-weight:400; font-size:1rem; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{width:var(--w); margin-inline:auto}
+.col{width:var(--col); margin-inline:auto}
+h1,h2,h3{font-family:Archivo,"IBM Plex Sans KR",sans-serif; text-wrap:balance; margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+
+/* ── header ── */
+header{border-bottom:1px solid var(--rule); padding:4.5rem 0 2.5rem; margin-bottom:3.5rem}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:1.1rem
+}
+h1{font-size:clamp(2.1rem,5.5vw,3.4rem); font-weight:700; letter-spacing:-.025em; line-height:1.08}
+.lede{margin:1.4rem 0 0; font-size:1.12rem; color:var(--ink-2); max-width:38rem}
+.meta{
+  display:flex; flex-wrap:wrap; gap:.5rem 1.75rem; margin-top:2rem;
+  font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--muted)
+}
+.meta b{color:var(--ink); font-weight:500}
+
+/* ── sections ── */
+section{margin-bottom:4rem}
+h2{
+  font-size:1.55rem; font-weight:600; letter-spacing:-.015em;
+  padding-bottom:.6rem; border-bottom:2px solid var(--ink); margin-bottom:1.6rem
+}
+h3{font-size:1.05rem; font-weight:600; margin:2rem 0 .6rem}
+p{margin:0 0 1.1rem}
+p:last-child{margin-bottom:0}
+strong{font-weight:600}
+code{
+  font-family:"IBM Plex Mono",monospace; font-size:.88em;
+  background:var(--sunk); padding:.12em .38em; border-radius:3px
+}
+
+/* ── timeline ── */
+.tl-shell{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:1.75rem 1.5rem 1.25rem; margin-bottom:1.5rem}
+.tl-scroll{overflow-x:auto}
+.tl{min-width:52rem}
+.tl-years{display:grid; grid-template-columns:repeat(17,1fr); gap:2px; margin-bottom:.4rem}
+.tl-years span{
+  font-family:"IBM Plex Mono",monospace; font-size:.66rem; color:var(--muted);
+  text-align:center; letter-spacing:-.02em
+}
+.tl-bar{display:grid; grid-template-columns:repeat(17,1fr); gap:2px; height:56px}
+.tl-cell{position:relative; border-radius:2px; background:var(--train-w); border-bottom:3px solid var(--train)}
+.tl-cell.has-game::after{
+  content:""; position:absolute; inset:0; border-radius:2px;
+  background:repeating-linear-gradient(-45deg,transparent 0 4px,var(--game) 4px 6px);
+  opacity:.9
+}
+.tl-cell.split-a{
+  background:linear-gradient(105deg,var(--train-w) 0 62%,var(--valid-w) 62% 100%);
+  border-bottom:3px solid var(--valid);
+  border-image:linear-gradient(90deg,var(--train) 0 62%,var(--valid) 62% 100%) 1
+}
+.tl-cell.split-b{
+  background:linear-gradient(105deg,var(--valid-w) 0 40%,var(--test-w) 40% 100%);
+  border-bottom:3px solid var(--test);
+  border-image:linear-gradient(90deg,var(--valid) 0 40%,var(--test) 40% 100%) 1
+}
+.tl-note{
+  display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; margin-top:.9rem;
+  font-size:.78rem; color:var(--muted)
+}
+.key{display:inline-flex; align-items:center; gap:.45rem}
+.sw{width:22px; height:11px; border-radius:2px; flex:none}
+.sw.tr{background:var(--train-w); border-bottom:3px solid var(--train)}
+.sw.va{background:var(--valid-w); border-bottom:3px solid var(--valid)}
+.sw.te{background:var(--test-w); border-bottom:3px solid var(--test)}
+.sw.ga{background:repeating-linear-gradient(-45deg,var(--game-w) 0 4px,var(--game) 4px 6px)}
+
+/* ── tables ── */
+.tscroll{overflow-x:auto; margin-bottom:1.25rem}
+table{border-collapse:collapse; width:100%; font-size:.9rem; min-width:34rem}
+th,td{text-align:left; padding:.62rem .8rem; border-bottom:1px solid var(--rule)}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:.7rem; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--muted); font-weight:500;
+  border-bottom:1px solid var(--rule-2)
+}
+td.num,th.num{text-align:right; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:none}
+
+.pill{
+  display:inline-block; padding:.1rem .5rem; border-radius:2px;
+  font-family:"IBM Plex Mono",monospace; font-size:.74rem; font-weight:500
+}
+.pill.tr{background:var(--train-w); color:var(--train)}
+.pill.va{background:var(--valid-w); color:var(--valid)}
+.pill.te{background:var(--test-w); color:var(--test)}
+.pill.ga{background:var(--game-w); color:var(--game)}
+
+/* ── rules callouts ── */
+.rules{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:4px; overflow:hidden}
+.rule{background:var(--paper); padding:1.15rem 1.35rem; display:grid; grid-template-columns:auto 1fr; gap:1rem; align-items:start}
+.rule .n{
+  font-family:Archivo,sans-serif; font-size:1.6rem; font-weight:700;
+  color:var(--warn); line-height:1; padding-top:.1rem
+}
+.rule h3{margin:0 0 .3rem; font-size:1rem}
+.rule p{margin:0; font-size:.92rem; color:var(--ink-2)}
+
+/* ── branch cards ── */
+.branches{display:grid; grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)); gap:1.1rem}
+.branch{border:1px solid var(--rule); border-radius:4px; padding:1.25rem 1.35rem; background:var(--surface)}
+.branch .p{font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--muted); margin-bottom:.5rem}
+.branch h3{margin:0 0 .5rem; font-size:1.08rem}
+.branch p{font-size:.9rem; color:var(--ink-2); margin:0 0 .7rem}
+.branch ul{margin:0; padding-left:1.05rem; font-size:.86rem; color:var(--ink-2)}
+.branch li{margin-bottom:.25rem}
+
+pre{
+  background:var(--sunk); border:1px solid var(--rule); border-radius:4px;
+  padding:1rem 1.2rem; overflow-x:auto; margin:0 0 1.2rem;
+  font-family:"IBM Plex Mono",monospace; font-size:.83rem; line-height:1.65
+}
+pre code{background:none; padding:0; font-size:inherit}
+.cm{color:var(--muted)}
+
+.note{
+  border-left:3px solid var(--warn); background:var(--warn-w);
+  padding:.95rem 1.2rem; border-radius:0 3px 3px 0; margin-bottom:1.2rem; font-size:.92rem
+}
+.note b{color:var(--warn)}
+
+ul.plain{margin:0 0 1.2rem; padding-left:1.15rem}
+ul.plain li{margin-bottom:.4rem}
+
+footer{border-top:1px solid var(--rule); margin-top:1rem; padding:2rem 0 4rem; font-size:.82rem; color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){a{transition:color .15s}}
+a{color:var(--train)}
+:focus-visible{outline:2px solid var(--train); outline-offset:2px}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">경마 예측 플랫폼 · 데이터 규약 v2</div>
+    <h1>데이터 분할 규약</h1>
+    <p class="lede">6명이 같은 데이터로 각자 다른 가중치 모델을 만들고, 같은 기준으로 비교하기 위한 약속. 그리고 사용자가 플레이할 경주를 모델이 미리 보지 못하게 막는 장치.</p>
+    <div class="meta">
+      <span>원장 <b>445,351행</b></span>
+      <span>경주 <b>42,342</b></span>
+      <span>학습 피처 <b>82</b></span>
+      <span>게임풀 <b>3,700경주</b></span>
+      <span>재학습 <b>매주 월요일</b></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section>
+  <h2>네 갈래로 나눕니다</h2>
+  <div class="tl-shell">
+    <div class="tl-scroll"><div class="tl">
+      <div class="tl-years">
+        <span>2010</span><span>11</span><span>12</span><span>13</span><span>14</span>
+        <span>15</span><span>16</span><span>17</span><span>18</span><span>19</span>
+        <span>20</span><span>21</span><span>22</span><span>23</span><span>24</span>
+        <span>25</span><span>26</span>
+      </div>
+      <div class="tl-bar">
+        <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+        <div class="tl-cell"></div><div class="tl-cell"></div>
+        <div class="tl-cell has-game"></div><div class="tl-cell has-game"></div>
+        <div class="tl-cell has-game"></div><div class="tl-cell has-game"></div>
+        <div class="tl-cell has-game"></div><div class="tl-cell has-game"></div>
+        <div class="tl-cell has-game"></div><div class="tl-cell has-game"></div>
+        <div class="tl-cell has-game"></div><div class="tl-cell has-game"></div>
+        <div class="tl-cell split-a"></div><div class="tl-cell split-b"></div>
+      </div>
+    </div></div>
+    <div class="tl-note">
+      <span class="key"><span class="sw tr"></span>train — 나머지 전부</span>
+      <span class="key"><span class="sw ga"></span>game — 2015~2024 개최일 15%, 흩어서 영구 예약</span>
+      <span class="key"><span class="sw va"></span>valid — 직전 26주</span>
+      <span class="key"><span class="sw te"></span>test — 직전 16주</span>
+    </div>
+  </div>
+
+  <div class="tscroll"><table>
+    <thead><tr>
+      <th>구간</th><th>기간</th><th class="num">경주</th><th class="num">행</th><th>쓰는 곳</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><span class="pill ga">game</span></td>
+        <td class="mono">2015-01-04 ~ 2024-12-29</td>
+        <td class="num">3,700</td><td class="num">38,691</td>
+        <td>사용자 플레이 <strong>전용</strong></td></tr>
+      <tr><td><span class="pill te">test</span></td>
+        <td class="mono">2026-05-15 ~ 2026-08-30</td>
+        <td class="num">802</td><td class="num">7,894</td>
+        <td>6명 모델 비교, 최종 1회</td></tr>
+      <tr><td><span class="pill va">valid</span></td>
+        <td class="mono">2025-11-14 ~ 2026-05-10</td>
+        <td class="num">1,254</td><td class="num">13,252</td>
+        <td>하이퍼파라미터 튜닝</td></tr>
+      <tr><td><span class="pill tr">train</span></td>
+        <td class="mono">2010-01-08 ~ 2025-11-09</td>
+        <td class="num">36,586</td><td class="num">385,514</td>
+        <td>학습</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:.85rem;color:var(--muted)">2026-09-01 재학습 기준. <strong>valid·test 경계는 매주 월요일 함께 이동합니다</strong> — 평가 구간이 특정 연도에 고정돼 있으면 갈수록 무의미해지기 때문입니다. game 예약분만 고정입니다.</p>
+
+  <p>게임 구간을 <strong>뒤쪽 시간 블록이 아니라 흩어서</strong> 예약한 이유가 있습니다. 주말 실시간 예측을 하려면 2025~2026년 데이터를 학습에 넣어야 하는데, 게임풀이 맨 뒤에 있으면 매주 재학습할 때마다 게임 경주가 학습에 흡수됩니다. 개최일 단위로 흩어 예약하면 재학습을 아무리 돌려도 게임풀은 계속 미학습으로 남습니다.</p>
+
+  <p>경주 단위가 아니라 <strong>개최일 통째로</strong> 뺀 것도 의도입니다. 경주 단위로 흩뿌리면 같은 날 앞뒤 경주가 학습에 남아 애매해집니다.</p>
+</section>
+
+<section>
+  <h2>절대 규칙</h2>
+  <div class="rules">
+    <div class="rule">
+      <div class="n">1</div>
+      <div>
+        <h3>game 구간은 학습·검증·평가 어디에도 쓰지 않습니다</h3>
+        <p>모델이 그 경주를 본 적 있으면 비정상적으로 잘 맞힙니다. 일반화가 아니라 부분적으로 외운 겁니다. 그러면 "내 모델 vs 기본 모델 vs 시장" 비교가 통째로 무의미해집니다.</p>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="n">2</div>
+      <div>
+        <h3><code>game_holdout.json</code>은 재생성하지 않습니다</h3>
+        <p>시드 <code class="mono">20260901</code>로 뽑은 408개 개최일이 들어 있습니다. 이 파일이 바뀌는 순간 예약이 무의미해집니다. 빌더가 매번 이 파일을 읽어 학습에서 뺍니다.</p>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="n">3</div>
+      <div>
+        <h3>test는 각자 최종 1회만 엽니다</h3>
+        <p>6명이 각자 튜닝하며 test를 반복해 열어보면 그 순간 test가 valid가 됩니다. 튜닝은 valid로, test는 마지막 비교 때 한 번. 802경주에서 top-1 적중률의 표준오차가 1.7%p이니, 그보다 작은 차이는 우열로 읽지 마세요.</p>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="n">4</div>
+      <div>
+        <h3>valid·test는 개발 단계 전용입니다</h3>
+        <p>하이퍼파라미터가 정해지고 6명 비교가 끝나면, <strong>운영 모델은 game을 뺀 전부</strong>(train+valid+test)로 매주 재학습합니다. 그래야 주말 실시간 예측에 최신 10개월이 들어갑니다. game만 영구 제외입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>데이터는 세 갈래로 나옵니다</h2>
+  <div class="branches">
+    <div class="branch">
+      <div class="p mono">dataset/v2/model/</div>
+      <h3>학습용</h3>
+      <p>피처 82개. split별 parquet 4개. <span class="mono">445,351행</span></p>
+      <ul>
+        <li><code>train.parquet</code></li>
+        <li><code>valid.parquet</code></li>
+        <li><code>test.parquet</code></li>
+        <li><code>game.parquet</code> — 베이스 모델 추론용</li>
+      </ul>
+    </div>
+    <div class="branch">
+      <div class="p mono">dataset/v2/game/</div>
+      <h3>게임 구동용</h3>
+      <p>게임풀 3,700경주. <span class="mono">적중배당 39,101행</span></p>
+      <ul>
+        <li><code>race_card</code> — 날씨·주로·거리·등급</li>
+        <li><code>entries</code> — 출주마·기수·조교사·인기도</li>
+        <li><code>payouts</code> — <strong>7승식 적중배당</strong></li>
+      </ul>
+    </div>
+    <div class="branch">
+      <div class="p mono">dataset/v2/sim/</div>
+      <h3>경기 흐름 재생용</h3>
+      <p>구간별 통과 순위·상대위치 <span class="mono">135,845행</span>. <strong>학습에는 안 씁니다.</strong></p>
+      <ul>
+        <li>S1F · C2 · G3F · FIN 4지점<br><span class="mono" style="font-size:.78rem;color:var(--muted)">C2 는 52% — 코너 없는 단거리엔 없음</span></li>
+        <li>중간베팅(직선 전) 시점 산출</li>
+        <li>경주 애니메이션 재생</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>피처와 담당</h2>
+  <p>접두사가 곧 담당입니다. 가중치 적용이 문자열 필터 한 줄로 끝납니다.</p>
+  <div class="tscroll"><table>
+    <thead><tr>
+      <th>그룹</th><th>담당</th><th class="num">피처</th><th>문헌 근거</th><th class="num">충전</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="mono">X_</td><td>공통 — 전원 포함</td><td class="num">10</td><td>K3 · P4</td><td class="num">95%</td></tr>
+      <tr><td class="mono">F1_</td><td>최근 성적 · 조교</td><td class="num">12</td><td>B7 · K1 · K2 · K3</td><td class="num">94%</td></tr>
+      <tr><td class="mono">F2_</td><td>부모 성적 (육종가)</td><td class="num">11</td><td>KRA studbook BLUP</td><td class="num">62~72%<span class="mono" style="color:var(--muted)">*</span></td></tr>
+      <tr><td class="mono">F3_</td><td>기수 실력</td><td class="num">6</td><td>K1 · P4</td><td class="num">97%</td></tr>
+      <tr><td class="mono">F4_</td><td>거리 · 날씨</td><td class="num">7</td><td>P4</td><td class="num">94%</td></tr>
+      <tr><td class="mono">F5_</td><td>주행 스타일</td><td class="num">6</td><td>pace figure</td><td class="num">93%</td></tr>
+      <tr><td class="mono">F6_</td><td>인기도</td><td class="num">4</td><td>Benter 2단계</td><td class="num">100%</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:.85rem;color:var(--muted)">* F2는 2017년 이후 62~72%. 육종가 스냅샷이 2016-07부터라 그 이전은 결측입니다.</p>
+
+  <p>여기에 <strong>경주 내 정규화 26개</strong>가 붙습니다. 주요 연속형 13개에 <code>_z</code>(경주 내 z-score)와 <code>_rk</code>(순위 백분위)를 만들어 뒀습니다. <code class="mono">F3_jk_win_rate_365 = 0.15</code>가 좋은 값인지는 같은 경주 다른 기수들이 몇인지에 달렸으니, 그 상대값을 직접 준 겁니다.</p>
+</section>
+
+<section>
+  <h2>두 종류의 태그를 확인하세요</h2>
+
+  <h3>vol — UI 슬라이더 대상 25개</h3>
+  <p>경기마다 바뀌는 피처만 사용자가 조절하게 합니다. 날씨·주로·인기도·기수·게이트·거리가 여기 들어가고, 혈통·성별·산지는 <code>static</code>이라 슬라이더에서 뺍니다.</p>
+
+  <h3>tier=G — 리플레이 전용 4개</h3>
+  <div class="note">
+    <b>인기도(F6)는 주말 실시간 예측에 쓸 수 없습니다.</b> 과거 경주 리플레이에서는 배당이 확정돼 있어 쓸 수 있지만, 실제 주말 경기는 발주 4분 전에도 배당이 0행입니다(실측). 실시간 모델은 반드시 <code>features(exclude_tier=("G",))</code>로 F6를 빼고 학습·추론해야 합니다.
+  </div>
+  <p>즉 <strong>모델이 두 개 나옵니다</strong> — 게임용(82개)과 주말 실시간용(52개).</p>
+</section>
+
+<section>
+  <h2>시작하기</h2>
+<pre><code>import pandas as pd
+from schema_v2 import features, GROUPS
+
+tr = pd.read_parquet("dataset/v2/model/train.parquet")
+va = pd.read_parquet("dataset/v2/model/valid.parquet")
+
+MY = "F3"                              <span class="cm"># 자기 담당 그룹</span>
+cols = features(groups=["X", MY])      <span class="cm"># 공통 + 내 그룹</span>
+
+<span class="cm"># 랭킹 학습 — 경주 단위 상대비교가 이 문제의 본질(Bolton &amp; Chapman 1986)</span>
+import lightgbm as lgb
+g_tr = tr.groupby("race_id", sort=False).size().to_numpy()
+model = lgb.LGBMRanker(objective="lambdarank")
+model.fit(tr[cols], tr["y_rel"], group=g_tr,
+          categorical_feature=[c for c in cols if str(tr[c].dtype) == "category"])</code></pre>
+
+  <div class="note">
+    <b>정렬을 건드리지 마세요.</b> parquet은 <code>race_id</code> 기준으로 묶여 있습니다. LightGBM의 <code>group</code>은 "연속된 N행이 한 경주"라고 가정하므로, 셔플하면 <strong>에러 없이 조용히 틀린 모델</strong>이 나옵니다.
+  </div>
+
+  <h3>공통 평가 지표</h3>
+  <p>같은 test 셋에서 아래를 전부 보고합니다.</p>
+  <ul class="plain">
+    <li><strong>Top-1 적중률</strong> — 1위 예측이 실제 1착인 비율</li>
+    <li><strong>Top-3 적중률</strong>, <strong>NDCG@3</strong></li>
+    <li><strong>vs 시장 베이스라인</strong> — 인기 1위마 단순 베팅 대비</li>
+  </ul>
+  <p>마지막 줄이 핵심입니다. 실측 시장 베이스라인은 <strong class="mono">단승 36%</strong> · <strong class="mono">복승 67%</strong>입니다. 선행연구에서 신뢰할 수 있는 숫자는 단승 40%대이고, <strong>90%대 정확도는 클래스 불균형 아티팩트</strong>이니 그런 숫자가 나오면 버그를 의심하세요.</p>
+</section>
+
+<section>
+  <h2>알려진 한계</h2>
+  <div class="tscroll"><table>
+    <thead><tr><th>항목</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>육종가 2016년 이전</td><td>스냅샷 없음 — F2 전부 결측</td></tr>
+      <tr><td>혈통 API 커버리지</td><td>50.7%, 매일 2,500두씩 자동 수집 중 (약 9일)</td></tr>
+      <tr><td>출발조교 <span class="mono">(K2 Shapley 상위)</span></td><td>API가 최신 1일치만 제공 — 과거 소급 불가</td></tr>
+      <tr><td>질병 진단 <span class="mono">(K2 Shapley 상위)</span></td><td>조회 시점 기준 1년 롤링 — 2025-08 이후만 사용 가능</td></tr>
+      <tr><td>신마 6.7%</td><td>F1 전부 결측. 기수·조교·육종가로만 예측</td></tr>
+      <tr><td>이력 3경주 이하</td><td>전체 행의 24.5% — <code>F1_starts_life</code>를 신뢰도 가중치로 쓸 것</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p>스키마 단일 원천은 <code>schema_v2.py</code>입니다. 컬럼을 바꾸려면 그 파일을 고치고 <code>SCHEMA_VERSION</code>을 올린 뒤 데이터셋을 재생성하세요. 빌더는 <code>build_v2.py</code>, 누수 검증은 <code>validate_dataset.py</code>.</p>
+</footer>
