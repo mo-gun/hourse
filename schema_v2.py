@@ -29,7 +29,7 @@ v1 에서 발견해 제거한 것
   - _z 의 fillna(0): z-score 에서 0 은 '평균'이라 결측을 평균으로 위장했다. NaN 유지로 바꿈.
 """
 
-SCHEMA_VERSION = "2.0.0"
+SCHEMA_VERSION = "2.1.0"
 
 MODEL_DIR = "dataset/v2/model"
 GAME_DIR = "dataset/v2/game"
@@ -252,8 +252,6 @@ F6 = [
        "🏁 경주 내 확률분포 엔트로피 — 혼전(높음) vs 독주(낮음)"),
 ]
 
-FEATURE_BLOCKS = {"X": X, "F1": F1, "F2": F2, "F3": F3, "F4": F4, "F5": F5, "F6": F6}
-
 # 경주 내 정규화 — v1 처럼 무차별로 붙이지 않고, 상대비교가 실제로 의미있는 것만.
 # ⚠ v1 버그: 결측 z 를 0(=평균)으로 채웠다. v2 는 NaN 유지.
 NORMALIZE_WITHIN_RACE = [
@@ -266,6 +264,33 @@ NORMALIZE_WITHIN_RACE = [
 ]
 
 CATEGORICAL = ["X_sex", "X_prd_cty", "X_grade", "F4_weather", "F5_style", "F2_sire_id"]
+
+
+def _norm_cols():
+    """NORMALIZE_WITHIN_RACE 각 항목의 _z / _rk 를 스키마에 등록한다.
+
+    ★ 등록을 빠뜨리면 빌더가 계산해놓고 finalize 에서 버린다.
+      v2.0.0 에서 실제로 그랬다 — 26컬럼이 만들어졌다가 파케이에 안 남았다.
+      features() 가 반환하는 것만 살아남는다.
+    """
+    base = {c["name"]: c for blk in (X, F1, F2, F3, F4, F5, F6) for c in blk}
+    out = []
+    for name in NORMALIZE_WITHIN_RACE:
+        src = base.get(name)
+        if src is None:
+            continue
+        for suf, what in (("_z", "경주 내 z-score"), ("_rk", "경주 내 순위 백분위")):
+            out.append(_c(name + suf, src["group"], src["vol"], src["tier"], "float32",
+                          f"{what} — {src['desc'][:38]}", src["lit"]))
+    return out
+
+
+for _nc in _norm_cols():
+    {"X": X, "F1": F1, "F2": F2, "F3": F3, "F4": F4,
+     "F5": F5, "F6": F6}[_nc["group"]].append(_nc)
+
+FEATURE_BLOCKS = {"X": X, "F1": F1, "F2": F2, "F3": F3, "F4": F4, "F5": F5, "F6": F6}
+
 
 # 절대 피처로 쓰지 않는 원본 필드 (오늘 기준 스냅샷 = 미래 누수)
 FORBIDDEN = [
