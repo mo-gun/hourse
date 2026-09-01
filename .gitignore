@@ -35,3 +35,5 @@ data/raw/ebv/*.xlsx
 
 dataset/v2/model/*.parquet
 dataset/v2/sim/*.parquet
+
+experiments/out/
