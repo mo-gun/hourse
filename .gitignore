@@ -29,3 +29,6 @@ data/raw/pedigree_daily.log
 # ── OS / 편집기 ───────────────────────────────────────────
 Thumbs.db
 .DS_Store
+
+# 육종가 원본 xlsx (20개, 약 27MB) — data/raw/ebv_long.csv 로 파싱해 쓴다
+data/raw/ebv/*.xlsx
