@@ -352,7 +352,7 @@ a{color:var(--train)}
   <div class="note">
     <b>인기도(F6)는 주말 실시간 예측에 쓸 수 없습니다.</b> 과거 경주 리플레이에서는 배당이 확정돼 있어 쓸 수 있지만, 실제 주말 경기는 발주 4분 전에도 배당이 0행입니다(실측). 실시간 모델은 반드시 <code>features(exclude_tier=("G",))</code>로 F6를 빼고 학습·추론해야 합니다.
   </div>
-  <p>즉 <strong>모델이 두 개 나옵니다</strong> — 게임용(82개)과 주말 실시간용(52개).</p>
+  <p>즉 <strong>모델이 두 개 나옵니다</strong> — 게임용(<strong class="mono">82개</strong>)과 주말 실시간용(<strong class="mono">78개</strong>).</p>
 </section>
 
 <section>
@@ -384,7 +384,60 @@ model.fit(tr[cols], tr["y_rel"], group=g_tr,
     <li><strong>Top-3 적중률</strong>, <strong>NDCG@3</strong></li>
     <li><strong>vs 시장 베이스라인</strong> — 인기 1위마 단순 베팅 대비</li>
   </ul>
-  <p>마지막 줄이 핵심입니다. 실측 시장 베이스라인은 <strong class="mono">단승 36%</strong> · <strong class="mono">복승 67%</strong>입니다. 선행연구에서 신뢰할 수 있는 숫자는 단승 40%대이고, <strong>90%대 정확도는 클래스 불균형 아티팩트</strong>이니 그런 숫자가 나오면 버그를 의심하세요.</p>
+  <p>마지막 줄이 핵심입니다. 이 <code>test</code> 셋의 실측 시장 베이스라인은 <strong class="mono">단승 34.2%</strong> · <strong class="mono">복승 65.7%</strong>입니다. 선행연구에서 신뢰할 수 있는 숫자는 단승 40%대이고, <strong>90%대 정확도는 클래스 불균형 아티팩트</strong>이니 그런 숫자가 나오면 버그를 의심하세요.</p>
+</section>
+
+<section>
+  <h2>기준선 — 시작 전에 알고 가세요</h2>
+  <p>이미 측정해 뒀습니다. 모르고 시작하면 "왜 내 모델이 시장을 못 이기지"로 며칠 헤맵니다.</p>
+  <div class="tscroll"><table>
+    <thead><tr><th>구성</th><th class="num">피처</th><th class="num">top-1</th><th class="num">top-3</th></tr></thead>
+    <tbody>
+      <tr><td>인기도 포함 (게임용)</td><td class="num">82</td><td class="num"><strong>36.8%</strong></td><td class="num">68.8%</td></tr>
+      <tr><td>인기도만</td><td class="num">4</td><td class="num">35.9%</td><td class="num">68.2%</td></tr>
+      <tr><td><strong>시장 (인기 1위마)</strong></td><td class="num">—</td><td class="num"><strong>34.2%</strong></td><td class="num">65.7%</td></tr>
+      <tr><td>인기도 제외 (주말 실시간용)</td><td class="num">78</td><td class="num"><strong>30.2%</strong></td><td class="num">64.0%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note">
+    <b>펀더멘털 피처만으로는 아직 시장을 못 이깁니다.</b> 단일 피처로 순위를 매겨보면 이유가 보입니다 —
+    <code class="mono">F1_ord_avg3</code> 25.5%, <code class="mono">F1_ordpct_avg5</code> 24.5%,
+    <code class="mono">F3_jk_win_rate_365</code> 19.1%인데 <code class="mono">F6_mkt_prob</code> 하나가 <strong>36.1%</strong>입니다.
+    배당률 하나가 펀더멘털 전부를 합친 것보다 강합니다.
+  </div>
+
+  <p>데이터 결함이 아닙니다. Tondapu(2024)가 100만 건으로 경마 베팅시장이 전통 금융시장보다 효율적임을 보였고, Benter가 5년 실전 수익을 낸 게 뉴스가 된 것도 그래서입니다. 시장 배당에는 우리에게 없는 정보가 들어 있습니다 — 조교 내용에 대한 전문가 판단, 마방 상태, 부상, 당일 패독 컨디션.</p>
+
+  <h3>이미 시도해서 소용없던 것</h3>
+  <p>인기도 제외 조건에서 전부 실측으로 기각했습니다. 다시 해보실 필요 없습니다.</p>
+  <div class="tscroll"><table>
+    <thead><tr><th>수정</th><th class="num">top-1</th></tr></thead>
+    <tbody>
+      <tr><td>현재 그대로</td><td class="num">30.7%</td></tr>
+      <tr><td>라벨을 등급형으로</td><td class="num">30.3%</td></tr>
+      <tr><td>범주형 native 처리</td><td class="num">29.2%</td></tr>
+      <tr><td>둘 다</td><td class="num">28.1%</td></tr>
+      <tr><td>경주 내 상수 피처 제거</td><td class="num">28.9%</td></tr>
+      <tr><td>이진분류로 전환</td><td class="num">30.8%</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>반면 <strong>경주 내 정규화는 효과가 있었습니다</strong> — 인기도 포함 모델이 35.7% → 36.8%. 기여도 1위가 <code class="mono">F1_ordpct_avg5_z</code>(31.5%)로, 절대값이 아니라 경주 내 상대값이 실제로 일을 합니다.</p>
+
+  <h3>과대적합이 있습니다</h3>
+  <div class="tscroll"><table>
+    <thead><tr><th class="num">rounds</th><th class="num">train</th><th class="num">valid</th><th class="num">test</th></tr></thead>
+    <tbody>
+      <tr><td class="num">50</td><td class="num">36.0%</td><td class="num">33.1%</td><td class="num">29.8%</td></tr>
+      <tr><td class="num">200</td><td class="num">42.7%</td><td class="num">34.6%</td><td class="num">30.7%</td></tr>
+      <tr><td class="num">800</td><td class="num">56.1%</td><td class="num">33.3%</td><td class="num">30.2%</td></tr>
+      <tr><td class="num">2000</td><td class="num">72.8%</td><td class="num">32.7%</td><td class="num">29.6%</td></tr>
+    </tbody>
+  </table></div>
+  <p>train만 오릅니다. <code>valid</code> 최고점이 200 rounds 근처이니 <strong>정규화를 세게 걸고 시작</strong>하세요.</p>
+
+  <p><strong>권하는 방향</strong>: 시장을 이기려 하지 말고 <strong>결합</strong>하세요. Benter 2단계 — 펀더멘털 모델을 만든 뒤 공개 배당과 합칩니다. 게임에서는 배당이 확정돼 있어 <code class="mono">F6_*</code>를 쓸 수 있습니다.</p>
 </section>
 
 <section>
