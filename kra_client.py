@@ -62,6 +62,29 @@ ENDPOINTS = {
     'race_detail':       ('racedetailresult/getracedetailresult', ['meet', 'rc_date', 'rc_no']),
     # 경주마 상세정보(마스터).
     'horse_info':        ('API8_2/raceHorseInfo_2',     ['meet', 'hr_name', 'hr_no']),
+
+    # ── 2026-09-07 추가 확인분. 전부 실호출 resultCode=00 ──────────────────
+    # ★ AI기반연구용 경주결과상세. 44필드. 2004~현재 전 구간 조회 가능(실측).
+    #   원장에 없는 것: pthrLatstPtinDt(직전 출전일 → 휴양일수) · pthrEquip(장구)
+    #                   hrmOwnerNm(마주) · pthrBthd(생년월일) · rsutRlStrtTim(실제 발주시각)
+    #   ⚠⚠ 파라미터명이 race_dt 다. rc_date/rc_month/rc_year 등은 **조용히 무시되고
+    #      최신 경주일이 돌아온다** — 과거 데이터인 줄 알고 쓰면 전량 오염된다. 실측 함정.
+    #   ✔ pthrLatstPtinDt 는 누수 없음. 같은 말을 2020-07/07-18/08-01 로 조회하면 값이
+    #     각각 직전 출전일과 정확히 일치했다(20두 확인). 스냅샷 아님.
+    'ai_race_detail':    ('API156/raceRsutDtl',         ['race_dt', 'rccrs_cd']),
+    # 출전취소. 7필드(chulNo·hrNo·reason). rc_year/rc_month/rc_date 전부 동작, 2015년 소급 확인.
+    #   게이트 번호가 당겨지는 원인 추적용 — 발주 직전 재조회 로직의 근거.
+    'cancel_info':       ('API9_1/raceHorseCancelInfo_1', ['meet', 'rc_date', 'rc_month', 'rc_no', 'rc_year']),
+    # 기수변경. 13필드. jkBef/jkAft + befBudam/aftBudam(부담중량 변동). 2015년 소급 확인.
+    'jockey_change':     ('API10_1/jockeyChangeInfo_1',  ['meet', 'rc_date', 'rc_month', 'rc_no', 'rc_year']),
+    # ★★ 출전마 체중. 승인돼 있는데 목록에서 누락돼 있었다(2026-09-07 발견).
+    #   4개 경마장 전부 + 2004~현재 소급(실측). 필드: wgHr · wgHrDiff(증감) · recentRcDate.
+    #   API317(서울 당일 마체중)을 신청할 이유가 없다 — 이쪽이 상위호환이다.
+    #   ⚠ 백필은 rc_month 로 할 것. rc_year=2020 이 1,130행인데 rc_month=202007 한 달이
+    #     1,183행이다. rc_year 는 값이 안 맞으니 쓰지 마라(실측).
+    #   ⚠ 다가올 경주일(20260911~13)은 totalCount=0 — 당일에만 채워진다.
+    #     발주 **전**에 채워지는지는 경마 시행일에 직접 확인해야 한다. 되면 실시간 피처가 생긴다.
+    'entry_weight':      ('API25_1/entryHorseWeightInfo_1', ['meet', 'hr_name', 'hr_no', 'rc_date', 'rc_month']),
 }
 
 # ⚠ 마필종합(API42_1)의 누적 스냅샷 필드 — LEAKY_FIELDS 와 같은 이유로 금지.
@@ -84,12 +107,14 @@ LEAKY_FIELDS = {
 }
 # 반대로 race_result 의 `rating` 은 경주 시점 값이라 누수가 없다(충전율 76%).
 
-# 미신청(호출 시 SERVICE_KEY_IS_NOT_REGISTERED_ERROR). 필요하면 data.go.kr 에서 추가 신청.
+# 미반영 — 호출 시 403 SERVICE_KEY_IS_NOT_REGISTERED_ERROR (2026-09-07 확인).
+#   경로 자체는 살아있다. 없는 경로는 400 NO_OPENAPI_SERVICE_ERROR 로 확실히 갈린다(대조군 실측).
+#   즉 아래는 '경로 오류'가 아니라 '신청 승인/게이트웨이 반영 대기'다.
 NOT_APPLIED = {
-    'race_detail':       'racedetailresult/getracedetailresult',   # 15089492 경주별상세성적표 (장구내역·마주복식)
-    'cancel_info':       'API9_1/raceHorseCancelInfo_1',           # 15056779 출전취소 (게이트 변동 추적에 필요)
+    'race_detail_full':  'racedetailresult/getracedetailresult',   # 15089492 경주별상세성적표
+    'weight_seoul':      'API317/textDataHoldSeWegInfo',           # ★ 서울 당일 마체중 (발주 전 컨디션)
+    'change_seoul':      'API320/textDataHoldSeChgInfo',           # 서울 기수변경·말취소
     'ai_race_plan':      'API154/racePlan',                        # 15143802 AI학습용_경주계획
-    'ai_race_detail':    'API156/raceRsutDtl',                     # 15150068 AI기반연구용_경주결과상세
 }
 # 경로 미확정: 15119524 경마시행당일_경주결과종합 — Swagger 는 'Race_Result_total' 이라 하나
 #              API1~199 전 범위에서 NO_OPENAPI_SERVICE_ERROR. 별도 확인 필요.

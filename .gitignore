@@ -36,3 +36,11 @@ data/raw/ebv/*.xlsx
 
 
 experiments/out/
+
+# ── 로컬 백업 (2026-09-07 2004 백필 작업) ─────────────────
+# 원장 백업 190MB — 원본이 이미 무시 대상이고 backfill_ledger.py 로 재생성된다.
+#   GitHub 100MB 하드리밋에도 걸린다.
+data/raw/_backup_before_2004/
+# 백필 전 데이터셋 스냅샷 62MB — 커밋된 dataset/v2 와 바이트 단위로 동일함을 확인했다.
+#   복구: git checkout 7067458 -- dataset/v2
+dataset/v2_before_2004/
