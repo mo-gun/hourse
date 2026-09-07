@@ -55,7 +55,7 @@
 
 **발주 전 확정** — 예측 입력으로 쓸 수 있다 (예정 경기에서 100%):
 `hrNo` `hrName` `prd`(산지) `age` `sex` · `rcDist` `rank` `budam` `prizeCond` `ageCond` `sexCond` ·
-`chulNo`(게이트) `dusu`(출주두수) `ilsu`(휴양일수) `wgBudam`(부담중량) ·
+`chulNo`(게이트) `dusu`(출주두수) `ilsu`(그 해 개최일 순번 — 휴양일수 아님) `wgBudam`(부담중량) ·
 `jkNo` `jkName` `trNo` `trName` `owNo` `owName` · `chaksun1~5` · `stTime`(발주시각) · `rating`(76%)
 
 **당일 확정** — 전날 예측에는 못 쓴다:

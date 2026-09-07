@@ -65,7 +65,7 @@ data.go.kr 참고문서에 적힌 주소를 그대로 쓰면 **`NO_OPENAPI_SERVI
 
 | 그룹 | 필드 | 비고 |
 |---|---|---|
-| **경주 조건** (발주 전 확정) | `rcDate` `rcDay` `rcNo` `rcDist` `meet` `rcName` `rank`(등급조건) `budam`(부담구분) `prizeCond` `ageCond` `sexCond` `ilsu` | `ilsu`=경주일수(직전 출주로부터 경과일) — **휴양 피처가 파생 없이 바로 있다** |
+| **경주 조건** (발주 전 확정) | `rcDate` `rcDay` `rcNo` `rcDist` `meet` `rcName` `rank`(등급조건) `budam`(부담구분) `prizeCond` `ageCond` `sexCond` `ilsu` | ⚠ **정정:** `ilsu`는 휴양일수가 **아니다**. 팀 실측(2015 서울) 결과 **그 해 n번째 개최일 순번**과 상관 1.0000. 진짜 휴양일수는 원장에서 직전 출주일과의 차로 직접 계산해야 한다 |
 | **환경** (당일 확정) | **`weather`** `track` | `track`은 `"양호 (7%)"` 형식 → 범주 + 함수율 연속값 동시 추출 |
 | **말** | `hrNo` `hrName` `hrNameEn` `name`(국적) `age` `sex` `rating` | `rating`은 **경주 시점 레이팅** (API77 스냅샷과 달리 누수 없음) |
 | **부담/컨디션** | `wgBudam`(부담중량) **`wgHr`**(마체중, `"465(+9)"` 형식) | `wgHr`에서 체중·증감 분리 파싱 필요 |
@@ -158,7 +158,7 @@ data.go.kr 참고문서에 적힌 주소를 그대로 쓰면 **`NO_OPENAPI_SERVI
 |---|---|---|
 | `hrNo` `hrName` `age` `sex` `name` | **100%** | 100% |
 | `rcDist` `rank` `budam` `prizeCond` `ageCond` `sexCond` | **100%** | 100% |
-| `chulNo`(게이트) `ilsu`(휴양일수) `wgBudam`(부담중량) | **100%** | 100% |
+| `chulNo`(게이트) `ilsu`(개최일 순번 ⚠) `wgBudam`(부담중량) | **100%** | 100% |
 | **`jkNo` `jkName` `trNo` `trName` `owNo` `owName`** | **100%** | 98~100% |
 | `chaksun1~5`(상금) | **100%** | 100% |
 | `rating` | 76% | 81% |
