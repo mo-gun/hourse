@@ -98,6 +98,14 @@ def load_ledger(limit=None):
     df["rating"] = pd.to_numeric(df["rating"], errors="coerce").replace(0, np.nan)
     df["winOdds"] = pd.to_numeric(df["winOdds"], errors="coerce").replace(0, np.nan)
     df["plcOdds"] = pd.to_numeric(df["plcOdds"], errors="coerce").replace(0, np.nan)
+    # 9999.9 는 "배당 없음"을 뜻하는 특수값이다. 진짜 배당으로 계산하면 숫자가 터진다 —
+    # 안 거르고 수익률을 재면 +250% 가 나온다(실제 -21.4%). 여기서 한 번 막으면
+    # F6_mkt_prob · F6_mkt_rank · game/entries 까지 전부 정리된다.  [EDA 2026-09 ②]
+    for _oc in ("winOdds", "plcOdds"):
+        df.loc[df[_oc] >= S.ODDS_NONE, _oc] = np.nan
+    # 등급 표기 통합 (`국5등급`/`국5` → `국5`). 안 하면 42개 표기가 서로 다른
+    # 등급으로 학습된다.  [EDA 2026-09 ⑤]
+    df["rank"] = df["rank"].map(S.normalize_grade)
 
     wg = df["wgHr"].map(parse_wg)
     df["X_wgHr"] = [a for a, _ in wg]

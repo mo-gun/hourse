@@ -29,7 +29,7 @@ v1 에서 발견해 제거한 것
   - _z 의 fillna(0): z-score 에서 0 은 '평균'이라 결측을 평균으로 위장했다. NaN 유지로 바꿈.
 """
 
-SCHEMA_VERSION = "2.1.0"
+SCHEMA_VERSION = "2.2.1"
 
 MODEL_DIR = "dataset/v2/model"
 GAME_DIR = "dataset/v2/game"
@@ -72,7 +72,10 @@ VOL = {"race": "경기마다 변함 — 당일 확인 가능",
        "static": "말 고유 — 거의 불변"}
 
 # 가용 시점 — 2026-08-28 발주 시간대 실측 (probe_realtime.py)
-TIER = {"A": "D-1 확정", "B": "발주 T-60~90분 (마체중)",
+# ★ B 의 "T-60~90분" 은 docs/주제기획 의 [추정] 이 그대로 굳은 값이었는데, 2026-09-10
+#   제주 실측이 **아래쪽 끝(T-60)은 맞고 위쪽(T-90)은 아님**을 보였다 — 4R 이 T-65 에는
+#   비어 있고 T-61 에는 차 있다. 전환 구간을 4분으로 좁혀 T-61~65 로 적는다.
+TIER = {"A": "D-1 확정", "B": "발주 T-61~65분 (마체중)",
         "C": "발주 T-10분 (날씨·주로)", "G": "리플레이 전용 — 실시간 예측엔 못 씀",
         "P": "경주 후 — 학습 입력 금지"}
 
@@ -133,6 +136,48 @@ X = [
     _c("X_chulNo", "X", "race", "A", "int8", "게이트", "P4"),
     _c("X_gate_rel", "X", "race", "A", "float32", "게이트 ÷ 두수", "P4"),
     _c("X_wgBudam", "X", "race", "A", "float32", "부담중량 kg", "K3"),
+    # ★ 빌더(build_v2.py:111~112)가 계산해 놓고 여기 등록이 없어 finalize 에서 버려졌다.
+    #   _norm_cols() 주석에 적힌 v2.0.0 의 실수를 X 블록에서 되풀이한 것이다 —
+    #   **features() 가 반환하는 것만 파케이에 남는다.**  (2026-09-10 발견·등록)
+    #
+    #   tier=B 근거 — 2026-09-10 제주 실측 (probe_wghr_raceday.py). 4R 이 채워지는 순간을
+    #   4분 간격으로 포착했다:
+    #     경주   발주     관측     T-minus   원장 wgHr   API25_1 wgHr
+    #     4R    14:30    13:25     T-65분      0/8          0/8      ← 아직 없음
+    #     4R    14:30    13:29     T-61분      8/8          8/8      ← 채워짐
+    #     3R    14:00    13:24     T-36분      7/7          7/7      (이미 채워진 상태)
+    #   즉 **각 경주 발주 약 T-61~65분에 채워진다** — 전환이 그 4분 구간 안에서 일어났다.
+    #   3R 이 T-36 에 채워져 있던 것도 같은 규칙이다(그 경주는 ~13:00 에 찼을 것).
+    #   발주 전에 얻을 수 있으므로 주말 실시간(73→75피처) 모델에 쓸 수 있다.
+    #
+    #   ⚠ tier=A 는 아니다 — D-1 에는 없다. 2026-09-10(D-1) 실측으로 다가올 경주일
+    #     5건(9/11 제주·부경, 9/12 서울·제주, 9/13 서울) 전부 원장·API25_1 양쪽
+    #     wgHr 충전 **0/423두**. 출전표 행은 이미 있는데 체중만 비어 있다.
+    #
+    #   ⚠ 운영 제약 — 이 피처를 실시간 모델에 실제로 쓰려면 추론이 **각 경주 발주
+    #     T-60분 안쪽**에 돌아야 한다. 주말 배치를 아침에 한 번 돌리면 뒤 경주는
+    #     체중이 아직 비어 있어 결측으로 들어간다(LightGBM 은 NaN, 신경망은 train
+    #     중앙값 대치 — 둘 다 조용히 열화된다). 경주별/롤링 추론 일정이 전제다.
+    #     추론 36경주가 278ms 라(basemodel/README §6) 일정만 바꾸면 되는 문제다.
+    #
+    #   ✔ 서빙 경로 값 일치 확인 — 학습은 원장(API4_3) wgHr, 실시간 서빙은
+    #     API25_1/entryHorseWeightInfo_1 이 될 텐데 두 엔드포인트의 wgHr 가
+    #     지난 경주일 4건 365두에서 **불일치 0** 이었다(2026-09-10 실측).
+    #
+    #   lit=None — 마체중을 직접 다룬 문헌 근거가 없다. 우리 실측만 있다:
+    #   게임풀 조건부 로짓에서 우리 모델 위에 유의(LR 15.79, p=7.1e-05)하지만
+    #   시장 위에는 아니고(p=0.44), **적중률 개선은 없다** — valid A/B 실측은
+    #   basemodel/experiments/ab_wghr.py 와 basemodel/ledger.md 참조.
+    #   ⛔ tier=P 로 **비활성** (2026-09-10 결정). 등록 자체는 위 주석의 버그 수정이지만,
+    #     적중률 개선이 0 인데(리플레이 −0.16%p p=0.864 · 실시간 −0.24%p p=0.795)
+    #     프로젝트 공용 어휘인 **77/73 을 79/75 로 바꿀 값이 없다.** 피처 수를 유지하고
+    #     가용시점·값 일치·A/B 근거만 남긴다. `F1_prize_life` 와 같은 처리다.
+    #     되살리려면 tier 를 "B" 로 바꾸면 된다 — 파케이에 컬럼이 이미 들어 있어
+    #     **재빌드가 필요 없다**(features() 가 반환하는 것만 모델이 본다).
+    _c("X_wgHr", "X", "race", "P", "float32",
+       "마체중 kg — 당일 계체값 [비활성] 발주 T-61~65분 가용, 적중률 개선 없음"),
+    _c("X_wgHr_delta", "X", "race", "P", "float32",
+       "마체중 증감 kg — 직전 출전 대비 [비활성]"),
     _c("X_rating", "X", "form", "A", "float32", "경주시점 레이팅 (충전 46%)", "P4"),
 ]
 
@@ -146,8 +191,13 @@ F1 = [
     _c("F1_ord_avg3", "F1", "form", "A", "float32", "최근 3경주 평균 착순", "K3"),
     _c("F1_ordpct_avg5", "F1", "form", "A", "float32", "최근 5경주 상대착순 (두수 보정)", "K3"),
     _c("F1_speed_avg3", "F1", "form", "A", "float32", "최근 3경주 평균 스피드지수", "PACE"),
-    _c("F1_prize_life", "F1", "form", "A", "float32",
-       "**통산 획득상금 (as-of)** — Borowski 최중요 피처. v1 에 없어서 신규 추가", "B7"),
+    # ⛔ tier=P — EDA(2026-09) 로 비활성. train 13.96% → valid 8.88% 로 무너진다.
+    #    아무거나 찍기(9.77%)보다 낮다. 상금 액수가 해마다 올라 옛날 말과 요즘 말을
+    #    비교할 수 없기 때문. Borowski 가 최중요로 꼽은 피처지만 우리 데이터에서는
+    #    명목금액이라 성립하지 않는다. 되살리려면 연도별 물가·상금규모로 정규화할 것.
+    #    _z / _rk 는 tier 를 상속하므로 이 한 줄로 3개가 같이 빠진다.
+    _c("F1_prize_life", "F1", "form", "P", "float32",
+       "통산 획득상금 (as-of) — [비활성] 연도 간 비교 불가", "B7"),
     _c("F1_prize_365", "F1", "form", "A", "float32", "최근 1년 획득상금", "B7"),
     _c("F1_grade_move", "F1", "form", "A", "int8", "등급 변동 +승급/0/-강급"),
     _c("F1_layoff_days", "F1", "race", "A", "int16",
@@ -216,11 +266,16 @@ F3 = [
 F4 = [
     _c("F4_hr_dist_win_rate", "F4", "race", "A", "float32", "이 말의 이번 거리대 승률", "P4"),
     _c("F4_dist_gap", "F4", "race", "A", "int16", "|이번 거리 − 최적 거리|", "P4"),
-    _c("F4_hr_meet_win_rate", "F4", "race", "A", "float32", "이 말의 이번 경마장 승률"),
+    # ⛔ tier=P — F1_win_rate_life 와 상관 0.995. 말이 대개 한 경마장에서만 뛰어
+    #    사실상 같은 숫자다. 적중률도 F1 쪽이 높아(27.10 vs 22.67) 그쪽을 남긴다.
+    _c("F4_hr_meet_win_rate", "F4", "race", "P", "float32",
+       "이 말의 이번 경마장 승률 — [비활성] F1_win_rate_life 와 중복(r=0.995)"),
     _c("F4_hr_wet_win_rate", "F4", "race", "A", "float32", "이 말의 불량주로 승률"),
     _c("F4_track_moist", "F4", "race", "C", "float32", "주로 함수율 % — **발주 T-10분**"),
     _c("F4_weather", "F4", "race", "C", "category", "날씨 — **발주 T-10분**"),
-    _c("F4_month", "F4", "race", "A", "int8", "월 — 계절성"),
+    # ⛔ tier=P — 분할끼리 월이 겹치지 않는다(valid 11~5월, test 5~8월).
+    #    PSI valid 3.14 / test 5.31 로 전 피처 중 최악. 계절성은 날씨·주로로 대신한다.
+    _c("F4_month", "F4", "race", "P", "int8", "월 — [비활성] 분할 간 미겹침(PSI 5.31)"),
 ]
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -349,6 +404,89 @@ def features(groups=None, vol=None, max_tier="C", exclude_tier=()):
 
 
 ALL = INDEX + TARGETS + X + F1 + F2 + F3 + F4 + F5 + F6
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# 로드 후 정리 — EDA(2026-09) 지적사항
+#
+# parquet 에 이미 들어간 값 중 손봐야 하는 것들이다. 재빌드 없이 쓰라고
+# 여기에 둔다. 빌더도 같은 함수를 쓰므로 다음 빌드부터는 이미 정리된 상태로
+# 나오고, 그때도 이 함수를 다시 부르는 것은 무해하다(멱등).
+# ═════════════════════════════════════════════════════════════════════════
+
+ODDS_NONE = 900.0          # winOdds 가 이 값 이상이면 "배당 없음"(특수값 9999.9)
+GRADE_NONE = ("", "-", "nan", "None")
+
+
+def normalize_grade(s):
+    """등급 표기 통합. `국5등급`/`국5` → `국5`, `제오픈`/`제OPEN` → `제OPEN`.
+
+    train 기준 42개 표기가 27개로 줄어든다. 통합 안 하면 모델이 `국5` 20,088행과
+    `국5등급` 40,776행을 서로 다른 등급으로 배운다.
+    """
+    if s is None:
+        return None
+    t = str(s).strip()
+    if t in GRADE_NONE:
+        return None
+    if t.endswith("등급"):
+        t = t[:-2]
+    t = t.replace("오픈", "OPEN").replace("Open", "OPEN").replace("open", "OPEN")
+    return t or None
+
+
+def clean(df):
+    """로드 직후 한 번 호출한다. 표기·특수값을 정리한 새 DataFrame 을 돌려준다.
+
+        import pandas as pd, schema_v2 as S
+        tr = S.clean(pd.read_parquet("model/train.parquet"))
+
+    하는 일 셋.
+      1. `X_grade` 표기 통합 (42 → 27)
+      2. `F2_sire_id` 의 결측 토큰 통일 — NaN 과 `'-'`(12,011행)가 섞여 있어
+         범주형으로 쓰면 빈 값이 두 종류로 갈린다
+      3. `winOdds` 특수값 9999.9 를 NaN 으로 — 진짜 배당으로 계산하면 수익률이
+         +250% 로 터진다(실제 -21.4%)
+    """
+    out = df.copy()
+    if "X_grade" in out.columns:
+        out["X_grade"] = out["X_grade"].astype("object").map(normalize_grade)
+    if "F2_sire_id" in out.columns:
+        out["F2_sire_id"] = out["F2_sire_id"].astype("object").replace(
+            {k: None for k in GRADE_NONE})
+    for c in ("winOdds", "plcOdds", "odds"):
+        if c in out.columns:
+            out.loc[out[c] >= ODDS_NONE, c] = None
+    # ★ dtype 복원. 범주형을 object 로 두면 LightGBM 이 그대로 거부한다
+    #   ("pandas dtypes must be int, float or bool"). 값을 바꾼 뒤 category 로 되돌린다.
+    for c in CATEGORICAL:
+        if c in out.columns:
+            out[c] = out[c].astype("category")
+    return out
+
+
+def flat_odds_races(df):
+    """배당이 없어 경주 안 확률이 전부 같은 경주의 race_id 집합.
+
+    2020년 15.4% / 2021년 7.0% 가 여기 걸린다. 겉보기엔 정상이라 그냥 지나간다.
+    시장 베이스라인을 재거나 배당을 쓰는 실험에서는 빼야 한다.
+    """
+    g = df.groupby("race_id")["F6_mkt_prob"]
+    span = g.transform("max") - g.transform("min")
+    return set(df.loc[span.fillna(0) < 1e-6, "race_id"].unique())
+
+
+def usable(df, drop_flat_odds=True):
+    """학습·평가에 쓸 행만 남긴다. 기본은 배당 없는 경주 제외.
+
+    인기도(F6_*)를 안 쓰는 실시간 모델이라면 `drop_flat_odds=False` 로 두어도 된다 —
+    배당이 없을 뿐 나머지 피처는 정상이다.
+    """
+    if not drop_flat_odds or "F6_mkt_prob" not in df.columns:
+        return df
+    bad = flat_odds_races(df)
+    return df[~df["race_id"].isin(bad)]
+
 
 if __name__ == "__main__":
     import sys
