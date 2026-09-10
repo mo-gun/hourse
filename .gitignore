@@ -52,3 +52,5 @@ data/raw/_pred_ledger_*.csv
 data/raw/ledger_2004_2026.csv
 # 2004 확장 빌드 백업 81MB — 기각된 구성이라 보관만
 dataset/v2_2004ext/
+# 누수 검증용 rev 산출물 — tools/build_extra_*.py 로 다시 만든다
+dataset/v2/extra/*_911rev.parquet

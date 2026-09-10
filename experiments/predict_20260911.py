@@ -178,6 +178,29 @@ def fix_sameday(new):
     return new.drop(columns=["_band"])
 
 
+EXTRA = [("margin_911", "H1 착차"), ("field_911", "H2 경쟁강도")]
+
+
+def join_extra(df):
+    """H1·H2 추가 피처를 row_id 로 붙인다. 순서가 바뀌면 group 이 조용히 틀린다.
+
+    9/11 행의 값이 가짜 착순에 반응하지 않는 것은 확인했다 — 말은 하루에 한 번만
+    뛰므로 말 단위 as-of 집계는 같은 날 오염이 없다. (rev 원장으로 다시 만들어
+    9/11 149행 전 컬럼 일치 확인)
+    """
+    add = []
+    for name, label in EXTRA:
+        m = pd.read_parquet(HERE / "dataset" / "v2" / "extra" / (name + ".parquet"))
+        cols = [c for c in m.columns if c != "row_id"]
+        before = df["row_id"].to_numpy()
+        df = df.merge(m, on="row_id", how="left")
+        assert (df["row_id"].to_numpy() == before).all(), "조인이 순서를 바꿨다"
+        add += cols
+        print("  %-12s 조인 %d개 · 전결측 %.1f%%"
+              % (label, len(cols), df[cols].isna().all(axis=1).mean() * 100))
+    return df, add
+
+
 def encode_pair(a, b, cols):
     a, b = a.copy(), b.copy()
     for c in cols:
@@ -256,8 +279,8 @@ def main():
     print("4) 학습 · 예측")
     print("=" * 78)
 
-    def fit_predict(train_df, cols, label):
-        x, y = encode_pair(train_df, new, cols)
+    def fit_predict_on(train_df, target_df, cols, label):
+        x, y = encode_pair(train_df, target_df, cols)
         groups = train_df.groupby("race_id", sort=False).size().to_numpy()
         ds = lgb.Dataset(x[cols].to_numpy(float), label=x["y_rel"].to_numpy(), group=groups)
         preds = []
@@ -269,10 +292,20 @@ def main():
               % (label, len(train_df), train_df["race_id"].nunique(), len(cols), len(SEEDS)))
         return np.mean(preds, axis=0)
 
+    def fit_predict(train_df, cols, label):
+        return fit_predict_on(train_df, new, cols, label)
+
     trv = df[df["split"].isin(("train", "valid"))].copy()
     new["s_A71_train"] = fit_predict(tr, F71, "A) tier A 71피처 train")
     new["s_A71_trval"] = fit_predict(trv, F71, "B) tier A 71피처 train+valid")
     new["s_F73_train"] = fit_predict(tr, F73, "C) 73피처(날씨·주로 NaN) train")
+
+    # D) H1+H2 — 착차·경쟁강도 4개를 더한다. train 내부 시간분할 CV(28,003경주)에서
+    #    logloss 가 유의하게 개선된 구성이다. top-1 은 그 표본에서도 안 움직였다.
+    print("")
+    tr_x, add = join_extra(tr)
+    new_x, _ = join_extra(new)
+    new["s_D75_train"] = fit_predict_on(tr_x, new_x, F71 + add, "D) tier A 71 + H1·H2 4개")
 
     print("")
     print("=" * 78)
@@ -280,11 +313,11 @@ def main():
     print("=" * 78)
     keep = ["race_id", "row_id", "rcDate", "meet", "rcNo", "X_chulNo", "hrNo", "hrName",
             "jkName", "trName", "X_rcDist", "X_grade", "X_dusu",
-            "s_A71_train", "s_A71_trval", "s_F73_train"]
+            "s_A71_train", "s_A71_trval", "s_F73_train", "s_D75_train"]
     keep = [c for c in keep if c in new.columns]
     P = new[keep].copy()
     P["meet_nm"] = pd.to_numeric(P["meet"]).map(MEETNM)
-    for c in ("s_A71_train", "s_A71_trval", "s_F73_train"):
+    for c in ("s_A71_train", "s_A71_trval", "s_F73_train", "s_D75_train"):
         P[c.replace("s_", "rank_")] = (P.groupby("race_id")[c]
                                        .rank(ascending=False, method="first").astype(int))
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -308,13 +341,35 @@ def main():
                  top["hrName"], int(top["X_chulNo"]), top["jkName"], alt["hrName"], agree))
 
     print("")
-    for x, y in (("A71_train", "A71_trval"), ("A71_train", "F73_train")):
+    for x, y in (("A71_train", "A71_trval"), ("A71_train", "F73_train"),
+                 ("A71_train", "D75_train")):
         n = 0
         for _, g in P.groupby("race_id"):
             a = g.loc[g["rank_" + x] == 1, "row_id"].iloc[0]
             b = g.loc[g["rank_" + y] == 1, "row_id"].iloc[0]
             n += int(a == b)
         print("  1픽 일치: %s vs %s → %d/%d경주" % (x, y, n, P["race_id"].nunique()))
+
+    print("")
+    print("=" * 78)
+    print("A(기준) vs D(H1+H2) 픽이 갈린 경주 — 내일 볼 지점")
+    print("=" * 78)
+    n_diff = 0
+    for rid, g in P.groupby("race_id"):
+        ga = g.loc[g["rank_A71_train"] == 1].iloc[0]
+        gd = g.loc[g["rank_D75_train"] == 1].iloc[0]
+        if ga["row_id"] != gd["row_id"]:
+            n_diff += 1
+            print("  %s %2dR  A=%-9s(%d번)  D=%-9s(%d번)"
+                  % (ga["meet_nm"], int(ga["rcNo"]), ga["hrName"], int(ga["X_chulNo"]),
+                     gd["hrName"], int(gd["X_chulNo"])))
+    if not n_diff:
+        print("  없음 — 16경주 전부 같은 말을 골랐다")
+    print("")
+    print("  ★ 16경주는 top-1 표준오차 ±11.8%p 다. H1+H2 효과(logloss -0.008~-0.013)를")
+    print("    이 표본으로 잡으려면 |효과|/SE = 0.39 로 불가능하다. 내일 숫자는")
+    print("    파이프라인 점검이고 모델 우열 판정이 아니다 — 판정은 train 내부")
+    print("    시간분할 CV 28,003경주(arena.cv)에서 이미 했다.")
 
 
 if __name__ == "__main__":

@@ -34,8 +34,10 @@ sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 
-LEDGER = "data/raw/ledger_2010_2026.csv"
-OUT = "dataset/v2/extra/margin.parquet"
+# 원장 경로와 산출물 이름을 인자로 받는다 — 9/11 사전 예측용으로 "원장 + 출전표"
+# 결합본에 대해서도 같은 코드로 만들어야 정의가 갈리지 않는다.
+LEDGER = sys.argv[1] if len(sys.argv) > 1 else "data/raw/ledger_2010_2026.csv"
+OUT = "dataset/v2/extra/margin%s.parquet" % ("_" + sys.argv[2] if len(sys.argv) > 2 else "")
 ORD_MAX = 16
 W365 = 365
 
