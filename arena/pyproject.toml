@@ -1,0 +1,23 @@
+[project]
+name = "arena"
+version = "0.1.0"
+description = "같은 데이터·같은 자로 여러 기법 계열을 붙여 재는 곳 (경마 랭킹)"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pyarrow>=16",
+    "scipy>=1.14",           # paired bootstrap · McNemar · 조건부로짓 우도비
+    "lightgbm>=4.5",         # 팀 기준선 재현 + objective 변형
+    "xgboost>=2.1",          # rank:pairwise / rank:ndcg
+    "catboost>=1.2",         # YetiRank · 범주형 native(ordered target statistics)
+    "scikit-learn>=1.5",     # RandomForest/ExtraTrees (Lessmann 2010) · isotonic 보정
+    "torch>=2.4",            # 신경망 계열 — 앙상블 다양성 확보용 (아래 주석)
+]
+
+# torch 를 뒤늦게 넣은 이유 — 1차 실측(계열 12종)에서 **트리 계열끼리 예측 상관이
+# 중앙값 0.943** 으로 나왔다. 같은 경주에서 같이 틀리니 계열을 늘려도 앙상블 이득이 없다.
+# 다양성이 나올 곳을 찾으려고 한 칸 붙였다. (결과: 이 칸도 트리와 0.87~0.95 로 상관이
+# 높았고, 가장 탈상관된 건 타깃을 바꾼 lgb_speedfig 였다 — ledger.md 참조)
+# MLP 하나라 CPU 로 충분하다. 규모를 키울 일이 생기면 RTX 4050 이니 cu130 인덱스를
+# 걸 것 (basemodel/pyproject.toml 주석 참조).
