@@ -30,6 +30,7 @@ as-of 프레임을 경주마다 다시 빌드하면 회당 180~230초다(원장 
 """
 import argparse
 import io
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -57,8 +58,11 @@ LIVE_COLS = ["X_wgHr", "X_wgHr_delta", "F4_weather", "F4_track_moist"]
 def feature_sets(df):
     f73 = [c for c in TS.features(exclude_tier=("G",)) if c in df.columns]
     f75 = f73 + [c for c in WG if c in df.columns]
+    f77 = [c for c in TS.features() if c in df.columns]          # 73 + F6 4개
+    f79 = f77 + [c for c in WG if c in df.columns]
     assert len(f73) == 73 and len(f75) == 75, "%d/%d" % (len(f73), len(f75))
-    return f73, f75
+    assert len(f77) == 77 and len(f79) == 79, "%d/%d" % (len(f77), len(f79))
+    return f73, f75, f77, f79
 
 
 def prepared_frame():
@@ -72,8 +76,14 @@ def prepared_frame():
 
 def do_train():
     tr, new = prepared_frame()
-    _, f75 = feature_sets(tr)
+    _, f75, _, f79 = feature_sets(tr)
     MODELS.mkdir(parents=True, exist_ok=True)
+    for tag, feats in (("75", f75), ("79", f79)):
+        _train_one(tr, new, feats, tag)
+
+
+def _train_one(tr, new, feats, tag):
+    f75 = feats
     x, _ = encode_pair(tr, new, f75)
     groups = tr.groupby("race_id", sort=False).size().to_numpy()
     ds = lgb.Dataset(x[f75].to_numpy(float), label=tr["y_rel"].to_numpy(), group=groups)
@@ -84,21 +94,22 @@ def do_train():
         #   (Windows C++ 계층 한계). 이 폴더가 "주제선정" 이라 그대로 쓰면
         #   "Model file ... is not available for writes" 가 난다.
         #   → 문자열로 뽑아 파이썬이 쓰고, 읽을 때도 model_str 로 넣는다.
-        io.open(MODELS / ("t10_75_%d.txt" % s), "w", encoding="utf-8").write(m.model_to_string())
-        print("  저장 t10_75_%d.txt" % s)
+        io.open(MODELS / ("t10_%s_%d.txt" % (tag, s)), "w",
+                encoding="utf-8").write(m.model_to_string())
+        print("  저장 t10_%s_%d.txt" % (tag, s))
     # 범주형 인코딩 사전을 고정해 둔다 — 추론 때 학습과 같은 코드를 써야 한다
     lv = {}
     for c in f75:
         if c in tr.columns and not pd.api.types.is_numeric_dtype(tr[c]):
             lv[c] = sorted(set(tr[c].dropna().astype(str)) | set(new[c].dropna().astype(str)))
-    pd.to_pickle({"feats": f75, "levels": lv}, MODELS / "t10_75_meta.pkl")
-    print("  학습 완료 — train %d행 %d경주 · 75피처 · 시드 %d개"
-          % (len(tr), tr["race_id"].nunique(), len(SEEDS)))
+    pd.to_pickle({"feats": f75, "levels": lv}, MODELS / ("t10_%s_meta.pkl" % tag))
+    print("  학습 완료 — train %d행 %d경주 · %s피처 · 시드 %d개"
+          % (len(tr), tr["race_id"].nunique(), tag, len(SEEDS)))
 
 
-def load_models():
-    meta = pd.read_pickle(MODELS / "t10_75_meta.pkl")
-    ms = [lgb.Booster(model_str=io.open(MODELS / ("t10_75_%d.txt" % s),
+def load_models(tag="75"):
+    meta = pd.read_pickle(MODELS / ("t10_%s_meta.pkl" % tag))
+    ms = [lgb.Booster(model_str=io.open(MODELS / ("t10_%s_%d.txt" % (tag, s)),
                                         encoding="utf-8").read()) for s in SEEDS]
     return meta, ms
 
@@ -151,7 +162,123 @@ def do_status():
                   % (nm, rn, sc[rn][:2], sc[rn][2:], tm if tm is not None else "?", st))
 
 
-def do_predict(meet, rc_no):
+SENTINEL_ORD = 91          # 원장 ord >= 91 = 미출주·취소·실격 (91·92·93·94·95·98·99, 전체 2.22%)
+
+
+def refresh_entries(kra, meet, rc_no, g):
+    """출전취소를 반영하고 **경주 내 값을 다시 계산**한다.
+
+    원장은 취소마를 지우지 않고 ord 센티널로 표시한다(실측: 아신 94 · 아리온태양 95).
+    D-1 프레임은 취소 전에 굳혀졌으므로 그대로 예측하면 두수가 틀린 전제로 돈다.
+
+    취소마가 빠지면 다음이 전부 바뀐다 — 그래서 재계산한다:
+      X_dusu            출주두수
+      X_gate_rel        게이트 / 두수
+      F5_race_n_front   이 경주 선행마 수
+      _z / _rk  24개    경주 내 z-score · 순위 백분위 (NORMALIZE_WITHIN_RACE)
+
+    ※ 기수변경은 F3_jk_* 를 정확히 다시 만들 수 없다(as-of 누적이 필요). 발생하면
+      경고만 하고 값은 그대로 둔다 — 조용히 틀린 값을 쓰는 것보다 낫다.
+    """
+    from kra_client import KRAError
+    rows = kra.fetch("race_result", rc_date=str(TARGET), meet=meet, rc_no=rc_no)
+    out = set()
+    for r in rows:
+        o = str(r.get("ord", "")).strip()
+        if o.isdigit() and int(o) >= SENTINEL_ORD:
+            out.add(int(r["chulNo"]))
+    try:                                   # cancel_info 로 교차확인
+        for r in kra.fetch("cancel_info", rc_date=str(TARGET), meet=meet, rc_no=rc_no):
+            out.add(int(r["chulNo"]))
+    except KRAError:
+        pass
+    try:
+        jc = kra.fetch("jockey_change", rc_date=str(TARGET), meet=meet, rc_no=rc_no)
+    except KRAError:
+        jc = []
+    if jc:
+        print("  ⚠ 기수변경 %d건 — F3_jk_* 를 정확히 재계산할 수 없다(as-of 누적 필요). "
+              "값을 그대로 두고 표시만 한다:" % len(jc))
+        for r in jc[:4]:
+            print("      ", {k: r.get(k) for k in ("chulNo", "jkBef", "jkAft",
+                                                   "befBudam", "aftBudam") if k in r})
+    if not out:
+        return g, []
+    gates = g["X_chulNo"].astype(int)
+    dropped = g[gates.isin(out)][["hrName", "X_chulNo"]].copy()
+    g = g[~gates.isin(out)].copy()
+    n = len(g)
+    g["X_dusu"] = n
+    g["X_gate_rel"] = g["X_chulNo"].astype(float) / n
+    if "F5_early_pos" in g.columns and "F5_race_n_front" in g.columns:
+        g["F5_race_n_front"] = float((pd.to_numeric(g["F5_early_pos"],
+                                                    errors="coerce") < 0.25).sum())
+    n_re = 0
+    for c in TS.NORMALIZE_WITHIN_RACE:
+        if c not in g.columns:
+            continue
+        v = pd.to_numeric(g[c], errors="coerce")
+        sd = v.std()
+        if c + "_z" in g.columns:
+            g[c + "_z"] = (v - v.mean()) / (sd if sd and sd == sd else np.nan)
+            n_re += 1
+        if c + "_rk" in g.columns:
+            g[c + "_rk"] = v.rank(pct=True)
+            n_re += 1
+    print("  ★ 출전취소 %d두 반영 — %s → 두수 %d · 경주내 재계산 %d컬럼"
+          % (len(dropped), ", ".join("%s(%d번)" % (r.hrName, int(r.X_chulNo))
+                                     for r in dropped.itertuples()), n, n_re))
+    return g, dropped
+
+
+def parse_odds(text, gates):
+    """'1:3.2 2:5.8 ...' 또는 게이트 순서대로 '3.2 5.8 ...' 를 {게이트: 단승배당} 으로."""
+    toks = [t for t in re.split(r"[,\s]+", text.strip()) if t]
+    out = {}
+    if all(":" in t for t in toks):
+        for t in toks:
+            g, v = t.split(":", 1)
+            out[int(g)] = float(v)
+    else:
+        if len(toks) != len(gates):
+            raise SystemExit("배당 %d개 vs 출전 %d두 — 게이트를 'N:배당' 으로 주거나 두수를 맞춰라"
+                             % (len(toks), len(gates)))
+        for g, t in zip(sorted(gates), toks):
+            out[int(g)] = float(t)
+    return out
+
+
+def apply_market(g, odds):
+    """단승배당 -> F6 4개. build_v2 와 **같은 식**이어야 한다.
+
+      F6_mkt_prob      (1/배당) 을 경주 내 합=1 로 정규화 (오버라운드 제거)
+      F6_mkt_rank      배당 오름차순 순위 (method='min')
+      F6_mkt_prob_z    경주 내 z-score
+      F6_field_entropy -(p·log p) 합 — 경주 내 상수
+    배당 9999.9 계열(>= ODDS_NONE=900)은 '배당 없음' 특수값이라 제외한다.
+    """
+    import schema_v2 as S
+    o = g["X_chulNo"].astype(int).map(odds).astype(float)
+    o[o >= S.ODDS_NONE] = np.nan
+    o[o <= 0] = np.nan
+    inv = 1.0 / o
+    p = inv / inv.sum(skipna=True)
+    g["F6_mkt_prob"] = p.to_numpy()
+    g["F6_mkt_rank"] = o.rank(method="min").to_numpy()
+    sd = p.std()
+    g["F6_mkt_prob_z"] = ((p - p.mean()) / (sd if sd and sd == sd else np.nan)).to_numpy()
+    pc = p.clip(lower=1e-9)
+    g["F6_field_entropy"] = float(-(pc * np.log(pc)).sum())
+    n = int(o.notna().sum())
+    print("  시장 피처 계산 — 배당 %d/%d두 · 1인기 %s · 엔트로피 %.3f"
+          % (n, len(g),
+             (g.loc[g["F6_mkt_rank"] == 1, "hrName"].iloc[0]
+              if (g["F6_mkt_rank"] == 1).any() else "?"),
+             g["F6_field_entropy"].iloc[0]))
+    return g
+
+
+def do_predict(meet, rc_no, odds_text=None):
     kra = KRA()
     now = datetime.now()
     sc = sched(kra, meet)
@@ -162,11 +289,16 @@ def do_predict(meet, rc_no):
     if tm is not None and tm <= 0:
         print("  ⚠ 이미 발주 시각이 지났다. 사전 예측이 아니다 — 기록은 남기지만 그렇게 표시한다.")
 
-    meta, models = load_models()
+    tag = "79" if odds_text else "75"
+    meta, models = load_models(tag)
     _, new = prepared_frame()
     g = new[(pd.to_numeric(new["meet"]) == meet) & (pd.to_numeric(new["rcNo"]) == rc_no)].copy()
     if g.empty:
         raise SystemExit("그 경주가 프레임에 없다. --meet/--race 확인.")
+
+    g, dropped = refresh_entries(kra, meet, rc_no, g)
+    if g.empty:
+        raise SystemExit("전원 취소된 경주다.")
 
     live = fetch_live(kra, meet, rc_no)
     n_live = {c: 0 for c in LIVE_COLS}
@@ -181,6 +313,9 @@ def do_predict(meet, rc_no):
     print("  라이브 충전: " + " · ".join("%s %d/%d" % (c, n_live[c], len(g)) for c in LIVE_COLS))
     if n_live["X_wgHr"] == 0:
         print("  ⚠ 마체중이 아직 안 찼다 (발주 T-61~65분에 찬다). 지금 예측하면 tier B 가 결측이다.")
+    if odds_text:
+        g = apply_market(g, parse_odds(odds_text, g["X_chulNo"].astype(int).tolist()))
+        print("  → 79피처 모델(73 + 마체중 2 + 시장 4) 사용")
 
     feats = meta["feats"]
     x = g.copy()
@@ -206,8 +341,20 @@ def do_predict(meet, rc_no):
     rec["tminus"] = tm
     rec["n_live_wgHr"] = n_live["X_wgHr"]
     rec["n_live_weather"] = n_live["F4_weather"]
-    hdr = not LOG.exists()
-    rec.to_csv(LOG, mode="a", header=hdr, index=False, encoding="utf-8-sig")
+    rec["arm"] = tag
+    rec["odds_src"] = "manual" if odds_text else ""
+    rec["n_scratched"] = len(dropped)
+    # ★ 단순 append 는 컬럼이 늘면 파일이 깨진다. 실제로 그랬다 — --odds 를 붙이며
+    #   arm/odds_src 2개를 늘렸는데 헤더는 이미 17컬럼으로 쓰여 있어 뒤 행이 19컬럼이 되고
+    #   다음 read_csv 가 "Expected 17 fields, saw 19" 로 죽었다(그래서 --auto 가 멈췄다).
+    #   컬럼 합집합으로 다시 쓴다 — 스키마가 늘어도 자기 복구된다.
+    if LOG.exists():
+        old = pd.read_csv(LOG, encoding="utf-8-sig")
+        cols = list(dict.fromkeys(list(old.columns) + list(rec.columns)))
+        pd.concat([old.reindex(columns=cols), rec.reindex(columns=cols)],
+                  ignore_index=True).to_csv(LOG, index=False, encoding="utf-8-sig")
+    else:
+        rec.to_csv(LOG, index=False, encoding="utf-8-sig")
     print("")
     print("  → %s 에 추가 (%d행)" % (LOG.name, len(rec)))
     print("  ★ 16경주 top-1 표준오차 ±11.8%p. 이건 파이프라인 점검이고 우열 판정이 아니다.")
@@ -231,8 +378,13 @@ def do_auto(window=12, floor=6, poll=60):
     while True:
         done = set()
         if LOG.exists():
-            L = pd.read_csv(LOG, encoding="utf-8-sig")
-            done = {(int(a), int(b)) for a, b in zip(L["meet"], L["rcNo"])}
+            try:
+                L = pd.read_csv(LOG, encoding="utf-8-sig")
+                done = {(int(a), int(b)) for a, b in zip(L["meet"], L["rcNo"])}
+            except Exception as e:
+                # 로그가 깨져도 루프를 죽이지 않는다 — 최악이라도 중복 예측이지
+                # 발사를 놓치는 것보다 낫다
+                print("  ⚠ 로그 읽기 실패(%s) — 중복 위험을 안고 계속한다" % type(e).__name__)
         todo = {k: v for k, v in plan.items() if k not in done}
         if not todo:
             print("전 경주 예측 완료.")
@@ -269,6 +421,9 @@ def main():
                     help="대기하다가 경주마다 T-10분에 자동으로 한 번씩 예측")
     ap.add_argument("--meet", type=int, choices=(1, 2, 3))
     ap.add_argument("--race", type=int)
+    ap.add_argument("--odds", default=None,
+                    help="단승배당 직접 입력. \"1:3.2 2:5.8 ...\" 또는 게이트 순서 \"3.2 5.8 ...\". "
+                         "주면 79피처(시장 포함) 모델을 쓴다")
     a = ap.parse_args()
     if a.train:
         do_train()
@@ -277,7 +432,7 @@ def main():
     elif a.auto:
         do_auto()
     elif a.meet and a.race:
-        do_predict(a.meet, a.race)
+        do_predict(a.meet, a.race, a.odds)
     else:
         ap.error("--train / --status / --auto / (--meet 과 --race) 중 하나가 필요하다")
 
