@@ -1,0 +1,90 @@
+{
+  "axes": [
+    "CONDITION",
+    "SPEED",
+    "RUNNING",
+    "JOCKEY",
+    "ENVIRONMENT",
+    "ABILITY"
+  ],
+  "temperature": 0.0411,
+  "seeds": [
+    20260901,
+    20260902,
+    20260903
+  ],
+  "n_round": 200,
+  "axis_features": {
+    "CONDITION": [
+      "F1_starts_life",
+      "F1_win_rate_life",
+      "F1_ord_avg3",
+      "F1_ordpct_avg5",
+      "F1_prize_365",
+      "F1_grade_move",
+      "F1_layoff_days",
+      "F1_first_start",
+      "F1_tr_sessions_28d",
+      "F1_tr_jk_ridden_28d",
+      "F1_win_rate_life_z",
+      "F1_win_rate_life_rk",
+      "F1_ordpct_avg5_z",
+      "F1_ordpct_avg5_rk"
+    ],
+    "SPEED": [
+      "F1_speed_avg3",
+      "F1_speed_avg3_z",
+      "F1_speed_avg3_rk",
+      "F2_ebv_time"
+    ],
+    "RUNNING": [
+      "F5_early_pos",
+      "F5_pos_gain",
+      "F5_g3f_time",
+      "F5_sect_n",
+      "F5_early_pos_z",
+      "F5_early_pos_rk",
+      "F5_g3f_time_z",
+      "F5_g3f_time_rk"
+    ],
+    "JOCKEY": [
+      "F3_jk_win_rate_365",
+      "F3_jk_win_rate_life",
+      "F3_jk_win_rate_dist",
+      "F3_tr_win_rate_365",
+      "F3_jkhr_starts",
+      "F3_jkhr_win_rate",
+      "F3_jk_win_rate_365_z",
+      "F3_jk_win_rate_365_rk",
+      "F3_tr_win_rate_365_z",
+      "F3_tr_win_rate_365_rk"
+    ],
+    "ENVIRONMENT": [
+      "F4_hr_dist_win_rate",
+      "F4_dist_gap",
+      "F4_hr_wet_win_rate",
+      "F4_hr_dist_win_rate_z",
+      "F4_hr_dist_win_rate_rk",
+      "F2_ebv_sprint",
+      "F2_ebv_route",
+      "F2_ebv_dist_fit",
+      "F2_ebv_dist_fit_z",
+      "F2_ebv_dist_fit_rk"
+    ],
+    "ABILITY": [
+      "X_rating",
+      "X_rating_z",
+      "X_rating_rk",
+      "F2_ebv_prize",
+      "F2_ebv_acc",
+      "F2_ebv_ssgblup",
+      "F2_inbreeding",
+      "F2_sire_win_rate",
+      "F2_sire_prog_n",
+      "F2_ebv_prize_z",
+      "F2_ebv_prize_rk"
+    ]
+  },
+  "score_contract": "raw = (Σ_k groupWeights[k] * ax_k) / 100 ; p = softmax(raw * T) 경주 내",
+  "score_scale": "축 점수 = 축 랭커 출력의 경주 내 순위 백분위 × 100"
+}

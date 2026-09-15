@@ -60,3 +60,8 @@ dataset/v2/extra/*_911rev.parquet
 out/_frame_*.parquet
 out/models/
 # 예측·채점 기록은 작고 근거라서 커밋한다 (out/live_pred_*.csv, out/scored_*.csv)
+
+# 적재기 대용량 산출물 — 재생성 가능 (tools/emit_score_table.py)
+out/score_tables_sample.json
+out/*.npy
+out/*.log

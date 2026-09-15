@@ -1,0 +1,58 @@
+﻿display_order,group_code,code,source_column,name_ko,desc,tier,tier_ko,realtime,direction,role,ref_win_rate_bp,ref_races
+1,CONDITION,starts_life,F1_starts_life,통산 출주수 (as-of),통산 출주수 (as-of) — **F1 신뢰도 가중치로 쓸 것**. 전체 행의 24.5%가 3경주 이하,A,전일 확정,True,-1,PRIMARY,2503,879
+2,CONDITION,win_rate_life,F1_win_rate_life,통산 승률 (as-of),통산 승률 (as-of),A,전일 확정,True,1,PRIMARY,2892,823
+3,CONDITION,ord_avg3,F1_ord_avg3,최근 3경주 평균 착순,최근 3경주 평균 착순,A,전일 확정,True,-1,PRIMARY,2844,1069
+4,CONDITION,recent5_avg_rank,F1_ordpct_avg5,최근 5경주 상대착순 (두수 보정),최근 5경주 상대착순 (두수 보정),A,전일 확정,True,-1,PRIMARY,2953,1219
+5,CONDITION,prize_365,F1_prize_365,최근 1년 획득상금,최근 1년 획득상금,A,전일 확정,True,1,PRIMARY,1991,688
+6,CONDITION,grade_move,F1_grade_move,등급 변동 +승급/0/-강급,등급 변동 +승급/0/-강급,A,전일 확정,True,1,PRIMARY,2164,305
+7,CONDITION,layoff_days,F1_layoff_days,**진짜 휴양일수**,**진짜 휴양일수** — 원장 ilsu 는 개최일 순번이라 못 씀. 직전 출전 이후 경과일,A,전일 확정,True,1,PRIMARY,877,1140
+8,CONDITION,first_start,F1_first_start,신마 0/1 (전체 6.7%),신마 0/1 (전체 6.7%),A,전일 확정,True,1,PRIMARY,1515,66
+9,CONDITION,tr_sessions_28d,F1_tr_sessions_28d,28일 조교 횟수,28일 조교 횟수,A,전일 확정,True,1,PRIMARY,978,685
+10,CONDITION,tr_jk_ridden_28d,F1_tr_jk_ridden_28d,28일 중 **기수 기승** 조교 횟수,28일 중 **기수 기승** 조교 횟수 — 본격 준비 신호 (전체의 26%),A,전일 확정,True,1,PRIMARY,945,201
+11,CONDITION,win_rate_life_z,F1_win_rate_life_z,경주 내 z-score,경주 내 z-score — 통산 승률 (as-of),A,전일 확정,True,1,DERIVED,2890,820
+12,CONDITION,win_rate_life_rk,F1_win_rate_life_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 통산 승률 (as-of),A,전일 확정,True,1,DERIVED,2892,823
+13,CONDITION,recent5_avg_rank_z,F1_ordpct_avg5_z,경주 내 z-score,경주 내 z-score — 최근 5경주 상대착순 (두수 보정),A,전일 확정,True,-1,DERIVED,2953,1219
+14,CONDITION,recent5_avg_rank_rk,F1_ordpct_avg5_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 최근 5경주 상대착순 (두수 보정),A,전일 확정,True,-1,DERIVED,2947,1225
+15,SPEED,speed_index,F1_speed_avg3,최근 3경주 평균 스피드지수,최근 3경주 평균 스피드지수,A,전일 확정,True,1,PRIMARY,2412,1252
+16,SPEED,speed_index_z,F1_speed_avg3_z,경주 내 z-score,경주 내 z-score — 최근 3경주 평균 스피드지수,A,전일 확정,True,1,DERIVED,2410,1249
+17,SPEED,speed_index_rk,F1_speed_avg3_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 최근 3경주 평균 스피드지수,A,전일 확정,True,1,DERIVED,2412,1252
+18,SPEED,ebv_time,F2_ebv_time,주파기록 육종가(초),주파기록 육종가(초) — 음수일수록 빠름,A,전일 확정,True,-1,PRIMARY,1822,922
+19,RUNNING,early_pace,F5_early_pos,과거 평균 초반 상대위치 (0=선두),과거 평균 초반 상대위치 (0=선두),A,전일 확정,True,-1,PRIMARY,2072,1226
+20,RUNNING,pos_gain,F5_pos_gain,초반→결승 순위 상승폭. 양수=추입형,초반→결승 순위 상승폭. 양수=추입형,A,전일 확정,True,1,PRIMARY,1384,1243
+21,RUNNING,late_pace,F5_g3f_time,과거 평균 상3F (정규화),과거 평균 상3F (정규화) — 막판 각력,A,전일 확정,True,1,PRIMARY,2273,1232
+22,RUNNING,sect_n,F5_sect_n,구간기록 보유 과거 경주 수,구간기록 보유 과거 경주 수 — 신뢰도,A,전일 확정,True,-1,PRIMARY,2488,856
+23,RUNNING,early_pace_z,F5_early_pos_z,경주 내 z-score,경주 내 z-score — 과거 평균 초반 상대위치 (0=선두),A,전일 확정,True,-1,DERIVED,2072,1226
+24,RUNNING,early_pace_rk,F5_early_pos_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 과거 평균 초반 상대위치 (0=선두),A,전일 확정,True,-1,DERIVED,2072,1226
+25,RUNNING,late_pace_z,F5_g3f_time_z,경주 내 z-score,경주 내 z-score — 과거 평균 상3F (정규화) — 막판 각력,A,전일 확정,True,1,DERIVED,2270,1229
+26,RUNNING,late_pace_rk,F5_g3f_time_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 과거 평균 상3F (정규화) — 막판 각력,A,전일 확정,True,1,DERIVED,2277,1243
+27,JOCKEY,jockey_win_rate,F3_jk_win_rate_365,기수 최근 1년 승률,기수 최근 1년 승률 — 실측 2.2~23.2%로 10배 차이,A,전일 확정,True,1,PRIMARY,2019,1253
+28,JOCKEY,jk_win_rate_life,F3_jk_win_rate_life,기수 통산 승률 (as-of),기수 통산 승률 (as-of),A,전일 확정,True,1,PRIMARY,1834,1254
+29,JOCKEY,jk_win_rate_dist,F3_jk_win_rate_dist,기수의 이번 거리대 승률,기수의 이번 거리대 승률,A,전일 확정,True,1,PRIMARY,1812,1253
+30,JOCKEY,tr_win_rate_365,F3_tr_win_rate_365,조교사 최근 1년 승률,조교사 최근 1년 승률,A,전일 확정,True,1,PRIMARY,1540,1253
+31,JOCKEY,jkhr_starts,F3_jkhr_starts,기수-말 조합 누적 출주,기수-말 조합 누적 출주,A,전일 확정,True,1,PRIMARY,772,1010
+32,JOCKEY,jkhr_win_rate,F3_jkhr_win_rate,기수-말 조합 승률,기수-말 조합 승률,A,전일 확정,True,1,PRIMARY,2010,766
+33,JOCKEY,jockey_win_rate_z,F3_jk_win_rate_365_z,경주 내 z-score,경주 내 z-score — 기수 최근 1년 승률 — 실측 2.2~23.2%로 10배 차이,A,전일 확정,True,1,DERIVED,2019,1253
+34,JOCKEY,jockey_win_rate_rk,F3_jk_win_rate_365_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 기수 최근 1년 승률 — 실측 2.2~23.2%로 10배 차이,A,전일 확정,True,1,DERIVED,2019,1253
+35,JOCKEY,tr_win_rate_365_z,F3_tr_win_rate_365_z,경주 내 z-score,경주 내 z-score — 조교사 최근 1년 승률,A,전일 확정,True,1,DERIVED,1540,1253
+36,JOCKEY,tr_win_rate_365_rk,F3_tr_win_rate_365_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 조교사 최근 1년 승률,A,전일 확정,True,1,DERIVED,1540,1253
+37,ENVIRONMENT,hr_dist_win_rate,F4_hr_dist_win_rate,이 말의 이번 거리대 승률,이 말의 이번 거리대 승률,A,전일 확정,True,1,PRIMARY,2202,781
+38,ENVIRONMENT,dist_gap,F4_dist_gap,|이번 거리 − 최적 거리|,|이번 거리 − 최적 거리|,A,전일 확정,True,1,PRIMARY,763,367
+39,ENVIRONMENT,wet_track_rate,F4_hr_wet_win_rate,이 말의 불량주로 승률,이 말의 불량주로 승률,A,전일 확정,True,1,PRIMARY,2023,781
+40,ENVIRONMENT,hr_dist_win_rate_z,F4_hr_dist_win_rate_z,경주 내 z-score,경주 내 z-score — 이 말의 이번 거리대 승률,A,전일 확정,True,1,DERIVED,2218,771
+41,ENVIRONMENT,hr_dist_win_rate_rk,F4_hr_dist_win_rate_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 이 말의 이번 거리대 승률,A,전일 확정,True,1,DERIVED,2202,781
+42,ENVIRONMENT,ebv_sprint,F2_ebv_sprint,단거리 육종가,단거리 육종가 — 유전적 단거리 적성,A,전일 확정,True,1,PRIMARY,1652,920
+43,ENVIRONMENT,ebv_route,F2_ebv_route,중장거리 육종가,중장거리 육종가,A,전일 확정,True,1,PRIMARY,1322,923
+44,ENVIRONMENT,ebv_dist_fit,F2_ebv_dist_fit,이번 거리에 맞춘 육종가 = 단거리/중장거리 중 해당 쪽 (파생),이번 거리에 맞춘 육종가 = 단거리/중장거리 중 해당 쪽 (파생),A,전일 확정,True,1,PRIMARY,1650,921
+45,ENVIRONMENT,ebv_dist_fit_z,F2_ebv_dist_fit_z,경주 내 z-score,경주 내 z-score — 이번 거리에 맞춘 육종가 = 단거리/중장거리 중 해당 쪽 (파생),A,전일 확정,True,1,DERIVED,1650,921
+46,ENVIRONMENT,ebv_dist_fit_rk,F2_ebv_dist_fit_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 이번 거리에 맞춘 육종가 = 단거리/중장거리 중 해당 쪽 (파생),A,전일 확정,True,1,DERIVED,1650,921
+47,ABILITY,rating,X_rating,경주시점 레이팅 (충전 46%),경주시점 레이팅 (충전 46%),A,전일 확정,True,1,PRIMARY,1125,720
+48,ABILITY,rating_z,X_rating_z,경주 내 z-score,경주 내 z-score — 경주시점 레이팅 (충전 46%),A,전일 확정,True,1,DERIVED,1125,720
+49,ABILITY,rating_rk,X_rating_rk,경주 내 순위 백분위,경주 내 순위 백분위 — 경주시점 레이팅 (충전 46%),A,전일 확정,True,1,DERIVED,1125,720
+50,ABILITY,ebv_prize,F2_ebv_prize,상금 육종가,"상금 육종가 — 평균100·표준편차20 표준화. 120=상위16%, 140=상위2.3%",A,전일 확정,True,1,PRIMARY,1806,919
+51,ABILITY,ebv_acc,F2_ebv_acc,상금 육종가 정확도 0~1,상금 육종가 정확도 0~1 — **F2 신뢰도 가중치로 쓸 것**. 0.7 미만은 변동폭 큼,A,전일 확정,True,-1,PRIMARY,1529,922
+52,ABILITY,ebv_ssgblup,F2_ebv_ssgblup,SSGBLUP 육종가,SSGBLUP 육종가 — DNA 1만두 유전체 정보 반영,A,전일 확정,True,1,PRIMARY,1766,923
+53,ABILITY,inbreeding,F2_inbreeding,근교계수 %,근교계수 %,A,전일 확정,True,1,PRIMARY,823,838
+54,ABILITY,sire_win_rate,F2_sire_win_rate,부마 자마 승률 (원장 as-of 집계),부마 자마 승률 (원장 as-of 집계),A,전일 확정,True,1,PRIMARY,1494,1252
+55,ABILITY,sire_prog_n,F2_sire_prog_n,부마 자마 두수,부마 자마 두수 — 신뢰도 가중치,A,전일 확정,True,1,PRIMARY,1167,891
+56,ABILITY,ebv_prize_z,F2_ebv_prize_z,경주 내 z-score,"경주 내 z-score — 상금 육종가 — 평균100·표준편차20 표준화. 120=상위16%, ",A,전일 확정,True,1,DERIVED,1806,919
+57,ABILITY,ebv_prize_rk,F2_ebv_prize_rk,경주 내 순위 백분위,"경주 내 순위 백분위 — 상금 육종가 — 평균100·표준편차20 표준화. 120=상위16%, ",A,전일 확정,True,1,DERIVED,1806,919
