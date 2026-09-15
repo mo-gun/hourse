@@ -39,7 +39,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -144,8 +144,13 @@ def probe_once(kra, day, plans, now=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--day", type=int, default=int(datetime.now().strftime("%Y%m%d")))
-    ap.add_argument("--watch", action="store_true", help="5분마다 반복")
+    ap.add_argument("--watch", action="store_true",
+                    help="5분마다 반복 (마지막 발주 +N분에 자동 종료)")
     ap.add_argument("--every", type=int, default=300)
+    ap.add_argument("--stop-after", type=int, default=20,
+                    help="마지막 경주 발주 후 몇 분까지 볼지. 기본 20분")
+    ap.add_argument("--max-calls", type=int, default=2000,
+                    help="API 호출 상한. 넘으면 멈춘다")
     a = ap.parse_args()
 
     kra = KRA()
@@ -164,14 +169,43 @@ def main():
     print("판독 — 발주 **전**(T-minus 양수)에 배당 숫자가 보이면 그게 예상배당이다.")
     print("       발주 후에만 보이면 확정배당이고, 실시간 예측에는 쓸 수 없다.\n")
 
+    # ── 종료 조건 ────────────────────────────────────────────────────
+    # 2026-09-11 에 --watch 를 켜 두고 회수하지 않아 **사흘간** 돌면서 API 할당량을
+    # 태웠다 (T-4,429분짜리 관측이 기록에 남았다). 그래서 --watch 에 끝을 박는다.
+    #   ① 마지막 경주 발주 + stop-after 분이 지나면 멈춘다 — 그 뒤엔 볼 것이 없다
+    #   ② 호출이 max-calls 를 넘으면 멈춘다 — 편성을 잘못 읽어도 폭주하지 않는다
+    last = None
+    for sc in plans.values():
+        for hhmm in sc.values():
+            if len(hhmm) == 4 and hhmm.isdigit():
+                t = datetime(a.day // 10000, a.day // 100 % 100, a.day % 100,
+                             int(hhmm[:2]), int(hhmm[2:]))
+                last = t if last is None or t > last else last
+    deadline = (last + timedelta(minutes=a.stop_after)) if last else None
+    if a.watch and deadline is None:
+        print("발주 시각을 못 읽었다 — 반복하지 않고 1회만 관측한다.")
+        a.watch = False
+    if a.watch:
+        print("종료 — %s 까지 또는 %d콜"
+              % (deadline.strftime("%m/%d %H:%M"), a.max_calls))
+
     while True:
         print("=== 관측 %s ===" % datetime.now().strftime("%H:%M:%S"), flush=True)
         probe_once(kra, a.day, plans)
         if not a.watch:
             break
-        print("  (%d초 대기 · %d콜 누적)\n" % (a.every, kra.calls), flush=True)
+        now = datetime.now()
+        if now >= deadline:
+            print("  마지막 발주 +%d분 경과 — 종료" % a.stop_after, flush=True)
+            break
+        if kra.calls >= a.max_calls:
+            print("  호출 상한 %d 도달 — 종료" % a.max_calls, flush=True)
+            break
+        print("  (%d초 대기 · %d콜 · 종료까지 %d분)"
+              % (a.every, kra.calls, (deadline - now).total_seconds() // 60), flush=True)
         time.sleep(a.every)
-    print("\n기록 → %s" % LOG)
+    print("")
+    print("기록 -> %s  (총 %d콜)" % (LOG, kra.calls))
 
 
 if __name__ == "__main__":
