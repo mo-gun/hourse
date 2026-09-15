@@ -65,3 +65,4 @@ out/models/
 out/score_tables_sample.json
 out/*.npy
 out/*.log
+out/game_pool_scores.parquet
