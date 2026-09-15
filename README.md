@@ -230,12 +230,29 @@ aux_join.py ebv_join.py 조교·장제·혈통·육종가 조인
 probe_odds_live.py      배당 가용시점 계측기 (§4 의 근거를 만든 것)
 probe_wghr_raceday.py   마체중 가용시점 계측기 (§3)
 
-tools/                  백필·수집 도구
+tools/                  백필·수집 도구 + 제품 연동 (2026-09-14~15)
   backfill_ledger.py    원장
   backfill_aux.py       조교·장제·혈통
   append_september.py   최근 개최일 보강 (멱등) ★ 시행일마다 돌릴 것
   build_extra_margin.py H1 착차 피처
   build_extra_field.py  H2 경쟁강도 피처
+
+  ── 제품 연동 (§11) ──
+  fit_temperature.py           온도 T 실측 — 명세 0.0445 인가 구현 0.1 인가
+  fit_temperature_contract.py  확률 계약 3종 비교 (현행 / 경주표준화 / 축표준화)
+  fit_temperature_reachable.py 슬라이더로 **도달 가능한** 가중치에서만 재기
+  fit_temperature_sensitivity.py  점수 환산 방식이 T 를 얼마나 바꾸나
+  fit_temperature_robust.py    축 점수 생성기를 바꿔도 T 가 버티나
+  build_feature_master.py      지표 마스터 — 축·방향·가용시점·단독적중률
+  emit_feature_seed.py         → feature_seed.sql (백엔드가 그대로 INSERT)
+  build_axis_scores.py         LGB 축 랭커 6개 (비교 기준선)
+  roundtrip_tower.py           타워 축 점수를 제품 공식에 태워 왕복 검증
+  emit_score_table.py       ★ 적재기 — POST /ai/score-tables 형식 + 파일 재읽기 검증
+
+out/                    산출물 (대용량은 gitignore, 재생성 가능)
+  feature_seed.sql              feature_group 6 + feature 41
+  feature_master.csv/.json      지표 마스터
+  entry_feature_score_sample.sql  적재 예시
 
 experiments/            날짜별 기록 (9/5·9/11) — 그날 실제로 돌린 것 그대로 보존
 arena/                  기법 계열 비교장 (16계열 · CV · Benter 2단계). 정본은 팀 레포
@@ -270,6 +287,51 @@ HANDOFF-basemodel.md    모델 인계
 | LightGBM 저장 | `not available for writes` | **경로에 한글이 있으면 실패**(Windows). `model_to_string()` 으로 우회 |
 | T−minus | 하루 전엔 전 경주가 "지남" | 시:분만 쓰면 안 된다. 날짜를 포함해서 계산 |
 | CSV append | `Expected 17 fields, saw 19` | 스키마가 늘면 헤더와 어긋난다. 합집합으로 다시 쓴다 |
+
+---
+
+## 11. 제품 연동 — 팀 DB·화면에 붙이는 계약 (2026-09-15)
+
+모델이 팀 제품(front/back/DB)에 붙는 지점을 실측으로 확정했다. 상세는 정원님 레포
+`basemodel/` 의 두 문서에 있다 — **[INTEGRATION.md]** 진단 · **[AI-CONTRACT.md]** 실행 명세.
+(브랜치 `feat/basemodel-axis-ranker`)
+
+```
+점수  raw = Σ( groupWeights[k] × ax_k ) / 100        k = 6축
+확률  p   = softmax( raw × 0.0445 ),  경주 안에서
+적재  entry_feature_score 41칸 = ax_* 6(계산) + 표시 지표 35(화면)
+```
+
+### 온도 0.0445 는 그대로 쓴다 — 독립 측정 다섯 번
+
+| 축 점수 생성기 | 최적 T |
+|---|---:|
+| 지표 순위 평균 / 대표 지표 1개 / 순위 중앙값 | 0.0408 / 0.0447 / 0.0444 |
+| LGB 축 랭커 6개 | 0.0411 |
+| 6축 타워 (채택) | 0.0478 |
+
+명세와 백엔드 구현이 `0.0445` vs `0.1` 로 갈렸는데, **숫자 싸움이 아니라 "점수를 어떻게
+만드는지"를 안 정한 문제였다.** 축 점수를 경주 내 순위로 환산하면 점수 폭이 모델과 무관하게
+고정돼 T 가 안 흔들린다. `0.1` 만 어느 자에도 안 맞는다.
+
+### 축 점수는 모델이 낸다 — 지표 평균은 4.6%p 를 버린다
+
+| 축 점수를 만드는 법 | top-1 | top-3 |
+|---|---:|---:|
+| 지표값 순위 환산 → 그룹 평균 *(현재 BE 구현)* | 28.3% | 56.9% |
+| LGB 축 랭커 6개 | 31.0% | 60.5% |
+| **6축 타워 → 순위 환산 (채택)** | **32.9%** | 62.7% |
+| *(상한) LGB 73피처 통짜* | *33.5%* | *63.3%* |
+
+valid 1,254경주 · top-1 표준오차 ±0.85%p.
+
+### 팀이 고칠 곳 셋
+
+| 어디 | 무엇 | 근거 |
+|---|---|---|
+| BE `PredictionService:57` | `exp(s/10.0)` → `exp(s*0.0445)` | logloss +0.40 |
+| BE `EntryFeatureScoreAxisProvider` | 그룹 평균 대신 `ax_*` 6행을 읽는다 | top-1 −4.6%p |
+| FE `rules.js deckScores` | `groupWeights` + softmax, min-max 재척도 제거 | 점수가 전부 `-` 로 나온다 |
 
 ---
 
