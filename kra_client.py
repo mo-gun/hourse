@@ -14,7 +14,7 @@
     rows = kra.race_result(rc_month='202605', meet=1)      # 경주기록(93필드) — 학습 원장
     kra.backfill_csv('race_result_2000_2026.csv', 2000, 2026)
 """
-import urllib.request, urllib.parse, ssl, json, io, os, time, csv, sys
+import urllib.request, urllib.parse, urllib.error, ssl, json, io, os, time, csv, sys
 
 _CTX = ssl.create_default_context()
 _CTX.check_hostname = False
@@ -130,12 +130,66 @@ class KRAError(RuntimeError):
     pass
 
 
+class KRAQuotaError(KRAError):
+    """일일 호출 한도 초과. **재시도하면 안 된다.**
+
+    2026-09-14 에 배당 관측기(`probe_odds_live.py --watch`)를 회수하지 않아 하루 6,912콜을
+    태우고 할당량이 말랐다. 그때 이 예외가 없어서 `_raw` 가 429 를 일반 오류로 보고
+    3번씩 재시도했고, 실패 메시지도 "호출 실패: HTTP Error 429" 뿐이라 **원인을 몰랐다.**
+    한도 초과는 기다린다고 낫지 않는다 — 즉시 멈추고 무엇이 태웠는지 말해야 한다.
+    """
+
+
+# 공공데이터포털 한도 초과 신호. HTTP 429 와 resultCode 22 둘 다 쓴다.
+QUOTA_CODES = {'22'}
+QUOTA_WORDS = ('LIMITED_NUMBER_OF_SERVICE_REQUESTS', 'EXCEEDS', '초과', '429')
+
+
+def _is_quota(text) -> bool:
+    t = str(text).upper()
+    return any(w.upper() in t for w in QUOTA_WORDS)
+
+
 class KRA:
-    def __init__(self, key=None, env_path='.env', pause=0.12, retries=3):
+    def __init__(self, key=None, env_path='.env', pause=0.12, retries=3,
+                 budget=None, ledger_path=None):
+        """budget — 이 프로세스가 쓸 수 있는 최대 호출 수. 넘으면 KRAQuotaError.
+
+        기본값은 환경변수 KRA_CALL_BUDGET, 없으면 무제한이다. 서버에서 돌릴 때는
+        반드시 걸어라 — 한 스크립트가 폭주해도 다른 작업 몫이 남는다.
+
+        ledger_path 를 주면 날짜별 누적 호출 수를 그 파일(JSON)에 남긴다.
+        "오늘 몇 콜 썼나"를 프로세스 밖에서 알 수 있어야 사고를 조기에 본다.
+        """
         self.key = key or self._load_key(env_path)
         self.pause = pause
         self.retries = retries
         self.calls = 0
+        b = budget if budget is not None else os.environ.get('KRA_CALL_BUDGET')
+        self.budget = int(b) if b else None
+        self.ledger_path = ledger_path or os.environ.get('KRA_CALL_LEDGER')
+        self._today = time.strftime('%Y%m%d')
+
+    def _spend(self):
+        self.calls += 1
+        if self.budget and self.calls > self.budget:
+            raise KRAQuotaError(
+                '이 프로세스 호출 예산 %d 을 넘었다 (지금 %d). 폭주를 의심해라 — '
+                '반복 루프에 종료 조건이 있는지 보라.' % (self.budget, self.calls))
+        if self.ledger_path and self.calls % 25 == 0:
+            self._flush_ledger()
+
+    def _flush_ledger(self):
+        try:
+            d = {}
+            if os.path.exists(self.ledger_path):
+                with io.open(self.ledger_path, encoding='utf-8') as f:
+                    d = json.load(f)
+            d[self._today] = d.get(self._today, 0) + 25
+            with io.open(self.ledger_path, 'w', encoding='utf-8') as f:
+                json.dump(d, f, ensure_ascii=False, indent=1)
+        except Exception:
+            pass                                   # 기록 실패가 예측을 막으면 안 된다
 
     @staticmethod
     def _load_key(env_path):
@@ -155,9 +209,16 @@ class KRA:
         for attempt in range(self.retries):
             try:
                 body = urllib.request.urlopen(req, timeout=40, context=_CTX).read().decode('utf-8', 'replace')
-                self.calls += 1
+                self._spend()
                 time.sleep(self.pause)
                 return body
+            except urllib.error.HTTPError as e:
+                if e.code == 429 or _is_quota(e.reason):  # 한도 초과는 기다려도 안 낫는다
+                    raise KRAQuotaError(
+                        '일일 호출 한도 초과 (HTTP %d). 지금까지 이 프로세스 %d콜. '
+                        '자정에 초기화된다.' % (e.code, self.calls))
+                last = e
+                time.sleep(0.6 * (attempt + 1))
             except Exception as e:                       # 타임아웃/일시 오류는 백오프 후 재시도
                 last = e
                 time.sleep(0.6 * (attempt + 1))
@@ -179,11 +240,17 @@ class KRA:
             j = json.loads(body)
             if 'OpenAPI_ServiceResponse' in j:
                 hdr = j['OpenAPI_ServiceResponse'].get('cmmMsgHeader', {})
-                raise KRAError(f"{name}: {hdr.get('errMsg')} / {hdr.get('returnAuthMsg')}")
+                msg = f"{hdr.get('errMsg')} / {hdr.get('returnAuthMsg')}"
+                if str(hdr.get('returnReasonCode')) in QUOTA_CODES or _is_quota(msg):
+                    raise KRAQuotaError(f'{name}: 일일 호출 한도 초과 — {msg}')
+                raise KRAError(f'{name}: {msg}')
             resp = j.get('response', {})
             code = resp.get('header', {}).get('resultCode')
             if str(code) not in ('00', '0'):
-                raise KRAError(f"{name}: resultCode={code} {resp.get('header', {}).get('resultMsg')}")
+                msg = resp.get('header', {}).get('resultMsg')
+                if str(code) in QUOTA_CODES or _is_quota(msg):
+                    raise KRAQuotaError(f'{name}: 일일 호출 한도 초과 — resultCode={code} {msg}')
+                raise KRAError(f'{name}: resultCode={code} {msg}')
             b = resp.get('body') or {}
             total = b.get('totalCount') or 0
             if not total:
