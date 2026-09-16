@@ -255,6 +255,7 @@ tools/                  백필·수집 도구 + 제품 연동 (2026-09-14~15)
   build_axis_scores.py         LGB 축 랭커 6개 (비교 기준선)
   roundtrip_tower.py           타워 축 점수를 제품 공식에 태워 왕복 검증
   emit_score_table.py       ★ 적재기 — POST /ai/score-tables 형식 + 파일 재읽기 검증
+  emit_game_pool.py         ⛔ 폐기 — 도연님이 이미 적재했고 제품 필터가 그쪽이 맞다
 
 out/                    산출물 (대용량은 gitignore, 재생성 가능)
   feature_seed.sql              feature_group 6 + feature 41
